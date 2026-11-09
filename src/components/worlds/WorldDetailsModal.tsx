@@ -3,6 +3,7 @@ import { Check, Copy, Loader2, Puzzle, Skull, User } from "lucide-react";
 import { formatAppError, ServerProperties, tauriApi, WorldDetails } from "../../lib/tauri";
 import { useServerStore } from "../../stores/useServerStore";
 import { Button, EmptyState, Modal, PlayerHead, Row, Segmented, TextInput, Toggle } from "../ui";
+import { ServerAppearance } from "../ServerAppearance";
 
 const CORE_LABELS = { paper: "Paper", fabric: "Fabric", neoforge: "NeoForge" } as const;
 
@@ -121,9 +122,11 @@ export const WorldDetailsModal: React.FC<{
     if (!draft) return;
     const clean: ServerProperties = {
       ...draft,
-      motd: draft.motd.replace(/[\r\n]+/g, " "),
+      motd: draft.motd.replace(/\r/g, "").split("\n").slice(0, 2).join("\n"),
       max_players: clamp(Math.round(draft.max_players) || 1, 1, 1000),
       view_distance: clamp(Math.round(draft.view_distance) || 10, 2, 32),
+      simulation_distance: clamp(Math.round(draft.simulation_distance) || 8, 2, 32),
+      spawn_protection: clamp(Math.round(draft.spawn_protection) || 0, 0, 64),
     };
     setSaving(true);
     try {
@@ -200,7 +203,7 @@ export const WorldDetailsModal: React.FC<{
           )}
 
           <form
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 pt-2"
             onSubmit={(e) => {
               e.preventDefault();
               saveName();
@@ -334,6 +337,15 @@ export const WorldDetailsModal: React.FC<{
 
           <Section title="Settings" hint="Saved to this world only.">
             <div className="rounded-2xl bg-raised px-5 py-4">
+              <div className="pb-5 mb-1 border-b border-line/60">
+                <ServerAppearance
+                  worldId={worldId}
+                  motd={draft.motd}
+                  onMotdChange={(motd) => edit({ motd })}
+                  name={details.name}
+                  maxPlayers={draft.max_players}
+                />
+              </div>
               <Row title="Game mode" hint="What new players start in.">
                 <Segmented
                   value={draft.gamemode}
@@ -369,15 +381,6 @@ export const WorldDetailsModal: React.FC<{
                   onChange={(white_list) => edit({ white_list })}
                 />
               </Row>
-              <Row title="Welcome message" hint="Shown in the server list.">
-                <TextInput
-                  value={draft.motd}
-                  onChange={(e) => edit({ motd: e.target.value })}
-                  maxLength={120}
-                  aria-label="Welcome message"
-                  className="h-9 w-72 bg-surface"
-                />
-              </Row>
               <Row title="Most players at once">
                 <TextInput
                   type="number"
@@ -389,6 +392,13 @@ export const WorldDetailsModal: React.FC<{
                   className="h-9 w-24 bg-surface"
                 />
               </Row>
+              <Row title="Allow non-premium accounts" hint="Lets players without a bought Minecraft account join.">
+                <Toggle
+                  label="Allow non-premium accounts"
+                  checked={!draft.online_mode}
+                  onChange={(allow) => edit({ online_mode: !allow })}
+                />
+              </Row>
               <Row title="View distance" hint="In chunks. Lower is easier on your PC (2–32).">
                 <TextInput
                   type="number"
@@ -397,6 +407,28 @@ export const WorldDetailsModal: React.FC<{
                   value={draft.view_distance}
                   onChange={(e) => edit({ view_distance: Number(e.target.value) })}
                   aria-label="View distance"
+                  className="h-9 w-24 bg-surface"
+                />
+              </Row>
+              <Row title="Active area" hint="How far away crops grow and mobs move, in chunks (2–32).">
+                <TextInput
+                  type="number"
+                  min={2}
+                  max={32}
+                  value={draft.simulation_distance}
+                  onChange={(e) => edit({ simulation_distance: Number(e.target.value) })}
+                  aria-label="Active area"
+                  className="h-9 w-24 bg-surface"
+                />
+              </Row>
+              <Row title="Spawn protection" hint="Blocks around spawn that only admins can change (0–64).">
+                <TextInput
+                  type="number"
+                  min={0}
+                  max={64}
+                  value={draft.spawn_protection}
+                  onChange={(e) => edit({ spawn_protection: Number(e.target.value) })}
+                  aria-label="Spawn protection"
                   className="h-9 w-24 bg-surface"
                 />
               </Row>

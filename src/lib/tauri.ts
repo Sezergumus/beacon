@@ -436,6 +436,21 @@ export const tauriApi = {
   saveWorldProperties: (id: string, props: ServerProperties) =>
     invoke<ServerProperties>("save_world_properties", { id, props }),
 
+  /** The settings new worlds are made with (the Settings page). */
+  getDefaultProperties: () => invoke<ServerProperties>("get_default_properties"),
+
+  saveDefaultProperties: (props: ServerProperties) =>
+    invoke<ServerProperties>("save_default_properties", { props }),
+
+  /** A world's server icon as a data URL; with `null` the icon new worlds start with. */
+  getServerIcon: (id: string | null) => invoke<string | null>("get_server_icon", { id }),
+
+  /** Save a 64x64 PNG (base64, without the `data:` prefix) as the server icon. */
+  setServerIcon: (id: string | null, pngBase64: string) =>
+    invoke<void>("set_server_icon", { id, pngBase64 }),
+
+  clearServerIcon: (id: string | null) => invoke<void>("clear_server_icon", { id }),
+
   startP2pHost: (customRoomCode?: string) =>
     invoke<NetworkStateSnapshot>("start_p2p_host", {
       customRoomCode: customRoomCode ?? null,

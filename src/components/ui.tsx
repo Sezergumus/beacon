@@ -132,7 +132,7 @@ export const Button: React.FC<
 
 /* ---------- Inputs ---------- */
 
-export const TextInput: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = ({
+export const TextInput: React.FC<React.ComponentProps<"input">> = ({
   className,
   ...rest
 }) => (
