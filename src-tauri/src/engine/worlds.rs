@@ -313,11 +313,7 @@ pub fn create_world_with(
     // New worlds start from the settings and icon chosen on the Settings page.
     let mut props = crate::engine::properties::load_defaults(app_data_dir);
     props.save(&inst)?;
-    if let Ok(default_icon) = icon_path(app_data_dir, None) {
-        if default_icon.exists() {
-            let _ = fs::copy(default_icon, inst.join(ICON_FILE));
-        }
-    }
+    ensure_icon(app_data_dir, &id);
     set_level_name(&inst, LEGACY_WORLD_ID)?;
     if let Some(seed) = &seed {
         set_property(&inst, "level-seed", seed)?;
@@ -731,6 +727,9 @@ const ICON_FILE: &str = "server-icon.png";
 const ICON_SIZE: u32 = 64;
 const MAX_ICON_BYTES: usize = 64 * 1024;
 
+/// The app's own icon (64x64): what a world shows until the player picks another picture.
+const APP_ICON: &[u8] = include_bytes!("../../icons/64x64.png");
+
 /// The icon file of one world, or (with no id) the one new worlds start with.
 fn icon_path(app_data_dir: &Path, id: Option<&str>) -> AppResult<PathBuf> {
     match id {
@@ -744,17 +743,28 @@ fn icon_path(app_data_dir: &Path, id: Option<&str>) -> AppResult<PathBuf> {
     }
 }
 
-/// The icon as a `data:` URL the window can show, if one is set.
+/// The icon new worlds start with: the one chosen on the Settings page, else the app's.
+fn default_icon_bytes(app_data_dir: &Path) -> Vec<u8> {
+    fs::read(app_data_dir.join("default-server-icon.png")).unwrap_or_else(|_| APP_ICON.to_vec())
+}
+
+/// Give a world the default icon if it has none yet (older worlds, or a fresh one).
+pub fn ensure_icon(app_data_dir: &Path, id: &str) {
+    let path = instance_dir(app_data_dir, id).join(ICON_FILE);
+    if !path.exists() {
+        let _ = fs::write(path, default_icon_bytes(app_data_dir));
+    }
+}
+
+/// The icon as a `data:` URL the window can show. A world without one shows the default.
 pub fn read_icon(app_data_dir: &Path, id: Option<&str>) -> AppResult<Option<String>> {
     use base64::Engine;
     let path = icon_path(app_data_dir, id)?;
-    match fs::read(&path) {
-        Ok(bytes) => Ok(Some(format!(
-            "data:image/png;base64,{}",
-            base64::engine::general_purpose::STANDARD.encode(bytes)
-        ))),
-        Err(_) => Ok(None),
-    }
+    let bytes = fs::read(&path).unwrap_or_else(|_| default_icon_bytes(app_data_dir));
+    Ok(Some(format!(
+        "data:image/png;base64,{}",
+        base64::engine::general_purpose::STANDARD.encode(bytes)
+    )))
 }
 
 /// Save a PNG sent from the window. It must already be 64x64: the window crops and
@@ -794,12 +804,20 @@ pub fn write_icon(app_data_dir: &Path, id: Option<&str>, png_base64: &str) -> Ap
     Ok(())
 }
 
+/// Back to the default: for a world that is the starting icon, for the starting icon
+/// itself it is the app's own.
 pub fn clear_icon(app_data_dir: &Path, id: Option<&str>) -> AppResult<()> {
     let path = icon_path(app_data_dir, id)?;
-    match fs::remove_file(path) {
-        Ok(()) => Ok(()),
-        Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(()),
-        Err(e) => Err(e.into()),
+    match id {
+        None => match fs::remove_file(path) {
+            Ok(()) => Ok(()),
+            Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(()),
+            Err(e) => Err(e.into()),
+        },
+        Some(_) => {
+            fs::write(path, default_icon_bytes(app_data_dir))?;
+            Ok(())
+        }
     }
 }
 
@@ -1010,7 +1028,8 @@ mod tests {
     fn icons_are_checked_and_stored_per_world() {
         let app = temp("icons");
         let a = create_world(&app, "A", ServerCore::Paper, "1.21.1").unwrap();
-        assert!(read_icon(&app, Some(&a.id)).unwrap().is_none());
+        // Until a picture is chosen the world carries the app's own icon.
+        assert_eq!(fs::read(instance_dir(&app, &a.id).join(ICON_FILE)).unwrap(), APP_ICON);
         assert!(write_icon(&app, Some(&a.id), &png_header(32, 32)).is_err());
         assert!(write_icon(&app, Some(&a.id), "bm90IGEgcG5n").is_err());
         assert!(write_icon(&app, Some("../evil"), &png_header(64, 64)).is_err());
@@ -1018,7 +1037,7 @@ mod tests {
         assert!(instance_dir(&app, &a.id).join(ICON_FILE).exists());
         assert!(read_icon(&app, Some(&a.id)).unwrap().unwrap().starts_with("data:image/png;base64,"));
         clear_icon(&app, Some(&a.id)).unwrap();
-        assert!(read_icon(&app, Some(&a.id)).unwrap().is_none());
+        assert_eq!(fs::read(instance_dir(&app, &a.id).join(ICON_FILE)).unwrap(), APP_ICON);
     }
 
     #[test]
@@ -1037,6 +1056,7 @@ friends".to_string();
         assert_eq!(props.motd, "Welcome
 friends");
         assert!(instance_dir(&app, &w.id).join(ICON_FILE).exists());
+        assert_ne!(fs::read(instance_dir(&app, &w.id).join(ICON_FILE)).unwrap(), APP_ICON);
     }
 
     #[test]

@@ -205,6 +205,24 @@ async fn clear_server_icon(state: State<'_, AppState>, id: Option<String>) -> Ap
     worlds::clear_icon(&state.app_data_dir, id.as_deref())
 }
 
+/// Show the folder where Beacon keeps its worlds and settings in the file explorer.
+#[tauri::command]
+async fn open_data_folder(state: State<'_, AppState>) -> AppResult<String> {
+    let dir = state.app_data_dir.clone();
+    std::fs::create_dir_all(&dir)?;
+    #[cfg(target_os = "windows")]
+    let opener = "explorer";
+    #[cfg(target_os = "macos")]
+    let opener = "open";
+    #[cfg(all(not(target_os = "windows"), not(target_os = "macos")))]
+    let opener = "xdg-open";
+    std::process::Command::new(opener)
+        .arg(&dir)
+        .spawn()
+        .map_err(|e| AppError::Custom(format!("Couldn't open the folder: {}", e)))?;
+    Ok(dir.to_string_lossy().to_string())
+}
+
 #[tauri::command]
 async fn run_player_action(
     state: State<'_, AppState>,
@@ -534,6 +552,7 @@ pub fn run() {
             get_server_icon,
             set_server_icon,
             clear_server_icon,
+            open_data_folder,
             run_player_action,
             inspect_player_inventory,
             search_modrinth_catalog,

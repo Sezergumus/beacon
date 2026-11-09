@@ -468,6 +468,9 @@ impl ServerRunner {
                 .ensure_server_core(core, &mc_version, &java_bin, Some(&app_handle))
                 .await?;
 
+            // Every world shows an icon in the server list.
+            crate::engine::worlds::ensure_icon(&self.app_data_dir, &world.id);
+
             // Auto-accept eula.txt
             let eula_path = self.server_dir().join("eula.txt");
             fs::write(
