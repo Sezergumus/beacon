@@ -106,20 +106,21 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
     : "Pick a version and press Start. Beacon handles the rest.";
 
   return (
-    <div className="h-full overflow-y-auto">
+    <div className="h-full overflow-y-auto [scrollbar-gutter:stable]">
       <div className="max-w-4xl mx-auto px-8 py-8 flex flex-col gap-5">
         {/* 1. Start / stop */}
         <section className="rounded-3xl bg-surface p-7">
           <div className="flex items-center gap-6">
             <BeaconArt variant="card" status={status} />
             <div className="flex-1 min-w-0">
-              <h1 className="text-3xl font-extrabold tracking-tight">{title}</h1>
-              <p className="text-soft mt-1.5 text-base">{subtitle}</p>
+              <h1 className="text-3xl font-extrabold tracking-tight truncate">{title}</h1>
+              <p className="text-soft mt-1.5 text-base truncate">{subtitle}</p>
             </div>
             {isStopped ? (
               <Button
                 variant="primary"
                 size="lg"
+                className="w-40 shrink-0"
                 onClick={handleStart}
                 icon={<Play className="w-5 h-5 fill-current" />}
               >
@@ -129,6 +130,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
               <Button
                 variant="secondary"
                 size="lg"
+                className="w-40 shrink-0"
                 onClick={stopServer}
                 disabled={!isRunning}
                 icon={<Square className="w-4 h-4 fill-current" />}
@@ -138,78 +140,88 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
             )}
           </div>
 
-          {jvmProgress && (
-            <div className="mt-6">
-              <ProgressBar
-                percent={jvmProgress.percent}
-                label={jvmProgress.stage}
-                detail={`${jvmProgress.percent.toFixed(0)}%`}
-              />
-            </div>
-          )}
-
-          {isStopped && (
-            <div className="mt-6 pt-6 border-t border-line/60 flex flex-wrap items-center gap-x-6 gap-y-3">
-              <WorldPicker />
-              <label className="flex items-center gap-3">
-                <span className="font-bold text-soft">Version</span>
-                <select
-                  value={selectedVersion}
-                  onChange={(e) => setSelectedVersion(e.target.value)}
-                  disabled={!versionList}
-                  className="h-11 rounded-xl bg-raised px-3 font-bold text-ink cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand/60 disabled:opacity-50"
-                >
-                  {!versionList && <option value={selectedVersion}>Loading versions…</option>}
-                  {versionGroups.map(([group, items]) => (
-                    <optgroup key={group} label={`${group}.x`}>
-                      {items.map((v) => (
-                        <option key={v} value={v}>
-                          {v}
-                          {v === newestVersion ? " (newest)" : VERSION_NOTES[v] ? ` (${VERSION_NOTES[v]})` : ""}
-                        </option>
-                      ))}
-                    </optgroup>
-                  ))}
-                </select>
-              </label>
-              <div className="flex items-center gap-3">
-                <span className="font-bold text-soft">Type</span>
-                <Segmented<ServerCore>
-                  value={selectedCore}
-                  onChange={setSelectedCore}
-                  options={[
-                    { id: "paper", label: "Paper" },
-                    { id: "fabric", label: "Fabric" },
-                    { id: "neoforge", label: "NeoForge" },
-                  ]}
-                />
+          {/* The three states share one grid cell, so the card keeps its height
+              whichever one is showing and nothing below it jumps. */}
+          <div className="mt-6 pt-6 border-t border-line/60 grid">
+            <div
+              className={`col-start-1 row-start-1 ${isStopped ? "" : "invisible"}`}
+              aria-hidden={!isStopped}
+              inert={!isStopped}
+            >
+              <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+                <WorldPicker />
+                <label className="flex items-center gap-3">
+                  <span className="font-bold text-soft">Version</span>
+                  <select
+                    value={selectedVersion}
+                    onChange={(e) => setSelectedVersion(e.target.value)}
+                    disabled={!versionList}
+                    className="h-11 rounded-xl bg-raised px-3 font-bold text-ink cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand/60 disabled:opacity-50"
+                  >
+                    {!versionList && <option value={selectedVersion}>Loading versions…</option>}
+                    {versionGroups.map(([group, items]) => (
+                      <optgroup key={group} label={`${group}.x`}>
+                        {items.map((v) => (
+                          <option key={v} value={v}>
+                            {v}
+                            {v === newestVersion ? " (newest)" : VERSION_NOTES[v] ? ` (${VERSION_NOTES[v]})` : ""}
+                          </option>
+                        ))}
+                      </optgroup>
+                    ))}
+                  </select>
+                </label>
+                <div className="flex items-center gap-3">
+                  <span className="font-bold text-soft">Type</span>
+                  <Segmented<ServerCore>
+                    value={selectedCore}
+                    onChange={setSelectedCore}
+                    options={[
+                      { id: "paper", label: "Paper" },
+                      { id: "fabric", label: "Fabric" },
+                      { id: "neoforge", label: "NeoForge" },
+                    ]}
+                  />
+                </div>
+                <span className="text-sm text-faint">
+                  {selectedCore === "paper"
+                    ? "Classic Minecraft with plugin support."
+                    : "Pick this if you want to add mods."}{" "}
+                  Version, type, mods and plugins belong to this world only.
+                </span>
               </div>
-              <span className="text-sm text-faint">
-                {selectedCore === "paper"
-                  ? "Classic Minecraft with plugin support."
-                  : "Pick this if you want to add mods."}{" "}
-                Version, type, mods and plugins belong to this world only.
-              </span>
             </div>
-          )}
-
-          {isRunning && (
-            <div className="mt-6 pt-6 border-t border-line/60 flex flex-wrap items-center gap-2">
-              <span className="text-sm text-soft mr-auto">
-                {tps >= 18 ? "Running smoothly" : tps >= 14 ? "A bit busy" : "Lagging"} ·{" "}
-                {(ramUsed / 1024).toFixed(1)} of {(ramMax / 1024).toFixed(1)} GB memory used
-              </span>
-              <Button size="sm" onClick={() => sendCommand("time set day")} icon={<Sun className="w-4 h-4" />}>
-                Make it day
-              </Button>
-              <Button size="sm" onClick={() => sendCommand("weather clear")} icon={<CloudSun className="w-4 h-4" />}>
-                Clear weather
-              </Button>
-              <Button size="sm" onClick={() => sendCommand("save-all flush")} icon={<Save className="w-4 h-4" />}>
-                Save now
-              </Button>
+            <div
+              className={`col-start-1 row-start-1 ${isRunning ? "" : "invisible"}`}
+              aria-hidden={!isRunning}
+              inert={!isRunning}
+            >
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-sm text-soft mr-auto">
+                  {tps >= 18 ? "Running smoothly" : tps >= 14 ? "A bit busy" : "Lagging"} ·{" "}
+                  {(ramUsed / 1024).toFixed(1)} of {(ramMax / 1024).toFixed(1)} GB memory used
+                </span>
+                <Button size="sm" onClick={() => sendCommand("time set day")} icon={<Sun className="w-4 h-4" />}>
+                  Make it day
+                </Button>
+                <Button size="sm" onClick={() => sendCommand("weather clear")} icon={<CloudSun className="w-4 h-4" />}>
+                  Clear weather
+                </Button>
+                <Button size="sm" onClick={() => sendCommand("save-all flush")} icon={<Save className="w-4 h-4" />}>
+                  Save now
+                </Button>
+              </div>
             </div>
-          )}
+            <div className="col-start-1 row-start-1 pointer-events-none">
+              {jvmProgress && (
+                <ProgressBar
+                  percent={jvmProgress.percent}
+                  label={jvmProgress.stage}
+                  detail={`${jvmProgress.percent.toFixed(0)}%`}
+                />
+              )}
+            </div>
+          </div>
         </section>
 
         {/* 2. Friends */}

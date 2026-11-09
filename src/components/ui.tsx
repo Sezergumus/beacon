@@ -12,7 +12,7 @@ export const Page: React.FC<{
   action?: React.ReactNode;
   children: React.ReactNode;
 }> = ({ title, subtitle, action, children }) => (
-  <div className="h-full overflow-y-auto">
+  <div className="h-full overflow-y-auto [scrollbar-gutter:stable]">
     <div className="max-w-4xl mx-auto px-8 py-8 flex flex-col gap-5">
       <header className="flex items-end justify-between gap-4 mb-1">
         <div>
