@@ -1,0 +1,55 @@
+[package]
+name = "aethermc"
+version = "0.1.0"
+description = "Zero-Cost P2P Minecraft Server Manager"
+authors = ["AetherMC Team"]
+edition = "2021"
+
+[lib]
+name = "aethermc_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["full"] }
+thiserror = "2"
+anyhow = "1"
+
+# P2P Networking & NAT Traversal
+iroh = { version = "0.35.0", features = ["discovery-pkarr-dht", "discovery-local-network"] }
+iroh-base = { version = "0.35.0", features = ["ticket"] }
+iroh-blobs = { version = "0.35.0", default-features = false }
+pkarr = { version = "3.7", default-features = false, features = ["full-client"] }
+igd-next = "0.16"
+
+# Minecraft & NBT Parsing
+fastnbt = "2.5"
+flate2 = "1.0"
+
+# System, Compression & HTTP
+sysinfo = "0.33"
+zstd = "0.13"
+tar = "0.4"
+reqwest = { version = "0.12", default-features = false, features = ["json", "stream", "rustls-tls"] }
+zip = { version = "2.2", default-features = false, features = ["deflate"] }
+notify = "6.1"
+
+# Crypto, Hashing & Utilities
+sha2 = "0.10"
+blake3 = "1.5"
+hex = "0.4"
+base64 = "0.22"
+ed25519-dalek = "2.1"
+rand = "0.8"
+futures-util = "0.3"
+chrono = { version = "0.4", features = ["serde"] }
+uuid = { version = "1.11", features = ["v3", "v4", "serde"] }
+socket2 = { version = "0.5", features = ["all"] }
+url = "2.5"
+dirs = "5.0"
+tracing = "0.1"
