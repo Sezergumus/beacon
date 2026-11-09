@@ -1,0 +1,96 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* "Beacon night" palette, taken from the logo: slate-navy base, one turquoise accent. */
+@layer base {
+  :root {
+    --bg: 22 26 36; /* #161a24 */
+    --surface: 31 36 49; /* #1f2431 */
+    --raised: 42 49 65; /* #2a3141 */
+    --line: 58 66 85; /* #3a4255 */
+    --ink: 238 243 247; /* #eef3f7 */
+    --soft: 169 180 196; /* #a9b4c4 */
+    --faint: 122 133 151; /* #7a8597 */
+    --brand: 61 219 217; /* #3ddbd9 glowing core */
+    --brand-ink: 6 42 44; /* text on brand */
+    --sun: 242 186 82; /* warm amber */
+    --danger: 240 113 120; /* soft red */
+    --ok: 126 214 144; /* soft green (console / good state) */
+    --info: 125 182 255; /* soft blue (console info, numbers) */
+    --violet: 192 160 250; /* soft violet (console tags, chat) */
+  }
+
+  html,
+  body {
+    background: rgb(var(--bg));
+    color: rgb(var(--ink));
+    font-size: 15px;
+  }
+
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible {
+    outline: 2px solid rgb(var(--brand));
+    outline-offset: 2px;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+  }
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(var(--line)) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: rgb(var(--line));
+  border-radius: 9999px;
+}
+
+@keyframes beacon-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.animate-beacon-float {
+  animation: beacon-float 4s ease-in-out infinite;
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-toast-in {
+  animation: toast-in 180ms ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-beacon-float,
+  .animate-toast-in {
+    animation: none;
+  }
+}
