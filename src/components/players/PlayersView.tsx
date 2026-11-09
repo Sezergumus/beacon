@@ -3,14 +3,19 @@ import {
   Compass,
   Crown,
   Drumstick,
+  Footprints,
   Gift,
+  HardHat,
   Heart,
   MoreHorizontal,
   Package,
   Search,
+  Shield,
+  Shirt,
   Sparkles,
   Users,
   X,
+  type LucideIcon,
 } from "lucide-react";
 import { useServerStore } from "../../stores/useServerStore";
 import { InventoryItemSlot, OnlinePlayer } from "../../lib/tauri";
@@ -205,13 +210,65 @@ const PlayerCard: React.FC<{ player: OnlinePlayer }> = ({ player }) => {
 
 /* ---------- Inventory window ---------- */
 
-const ARMOR_SLOTS = [
-  { slot: 103, label: "Head" },
-  { slot: 102, label: "Chest" },
-  { slot: 101, label: "Legs" },
-  { slot: 100, label: "Feet" },
-  { slot: -106, label: "Off-hand" },
+const ARMOR_SLOTS: { slot: number; label: string; icon: LucideIcon }[] = [
+  { slot: 103, label: "Head", icon: HardHat },
+  { slot: 102, label: "Chest", icon: Shirt },
+  { slot: 101, label: "Legs", icon: Shirt },
+  { slot: 100, label: "Feet", icon: Footprints },
+  { slot: -106, label: "Off-hand", icon: Shield },
 ];
+
+/** Only the border of an item's rarity colour is used, so slots keep the app palette. */
+const rarityBorder = (rarityColor: string): string =>
+  rarityColor.match(/border-\S+/)?.[0] ?? "border-line/60";
+
+const SlotButton: React.FC<{
+  item: InventoryItemSlot | null;
+  label?: string;
+  emptyIcon?: LucideIcon;
+  onRemove: (item: InventoryItemSlot) => void;
+}> = ({ item, label, emptyIcon: EmptyIcon, onRemove }) => {
+  const vis = item ? resolveItemVisual(item.id) : null;
+  if (!item || !vis) {
+    return (
+      <div
+        title={label ?? "Empty"}
+        className="aspect-square rounded-xl bg-bg/40 border border-line/30 flex items-center justify-center"
+      >
+        {EmptyIcon ? (
+          <EmptyIcon className="w-5 h-5 text-faint/40" />
+        ) : (
+          label && <span className="text-[11px] font-bold text-faint/50">{label}</span>
+        )}
+      </div>
+    );
+  }
+  return (
+    <button
+      onClick={() => onRemove(item)}
+      title={`${vis.label} ×${item.count}: click to remove`}
+      aria-label={`Remove ${vis.label}`}
+      className={`group relative aspect-square rounded-xl border bg-raised flex items-center justify-center cursor-pointer transition-colors hover:bg-danger/20 hover:border-danger/60 ${rarityBorder(
+        vis.rarityColor
+      )}`}
+    >
+      <vis.icon className="w-6 h-6 text-ink group-hover:opacity-30 transition-opacity" />
+      <X className="absolute w-5 h-5 text-danger opacity-0 group-hover:opacity-100 transition-opacity" />
+      {item.count > 1 && (
+        <span className="absolute bottom-0.5 right-1 rounded-md bg-bg/80 px-1 text-[11px] leading-4 font-extrabold tabular-nums">
+          {item.count}
+        </span>
+      )}
+    </button>
+  );
+};
+
+const Stat: React.FC<{ icon: React.ReactNode; children: React.ReactNode }> = ({ icon, children }) => (
+  <span className="inline-flex items-center gap-1.5 rounded-full bg-raised px-3 py-1 text-sm font-bold">
+    {icon}
+    {children}
+  </span>
+);
 
 const nbtSlotToCommandSlot = (slot: number): string => {
   if (slot >= 0 && slot <= 8) return `hotbar.${slot}`;
@@ -250,31 +307,16 @@ const InventoryModal: React.FC = () => {
     (i) => i.name.toLowerCase().includes(q) || i.category.includes(q)
   );
 
-  const Slot: React.FC<{ n: number; label?: string }> = ({ n, label }) => {
-    const item = slotItem(n);
-    const vis = item ? resolveItemVisual(item.id) : null;
-    return (
-      <button
-        onClick={() => item && removeItem(item, n)}
-        title={item && vis ? `${vis.label} ×${item.count} — click to remove` : label ?? "Empty"}
-        className={`group relative aspect-square rounded-xl flex items-center justify-center transition-colors ${
-          item ? "bg-raised hover:bg-danger/20 cursor-pointer" : "bg-raised/50 cursor-default"
-        }`}
-      >
-        {item && vis ? (
-          <>
-            <vis.icon className="w-6 h-6 text-ink" />
-            {item.count > 1 && (
-              <span className="absolute bottom-0.5 right-1.5 text-xs font-extrabold">{item.count}</span>
-            )}
-            <X className="absolute top-1 right-1 w-3 h-3 text-danger opacity-0 group-hover:opacity-100" />
-          </>
-        ) : (
-          label && <span className="text-[11px] font-bold text-faint">{label}</span>
-        )}
-      </button>
-    );
-  };
+  const slot = (n: number, label?: string, emptyIcon?: LucideIcon) => (
+    <SlotButton
+      key={n}
+      item={slotItem(n)}
+      label={label}
+      emptyIcon={emptyIcon}
+      onRemove={(item) => removeItem(item, n)}
+    />
+  );
+  const itemCount = inv.inventory.length;
 
   return (
     <div
@@ -288,50 +330,63 @@ const InventoryModal: React.FC = () => {
         className="w-full max-w-5xl max-h-[90vh] overflow-y-auto rounded-3xl bg-surface shadow-2xl"
       >
         <div className="flex items-center gap-4 p-6 pb-2">
-          <PlayerHead name={name} size={48} />
-          <div className="flex-1">
-            <h2 className="text-xl font-extrabold">{name}'s inventory</h2>
-            <div className="text-sm text-soft mt-0.5 flex flex-wrap items-center gap-x-4 gap-y-1">
-              <span className="inline-flex items-center gap-1.5">
-                <Heart className="w-4 h-4 text-danger" /> {inv.health.toFixed(0)}/20
-              </span>
-              <span className="inline-flex items-center gap-1.5">
-                <Drumstick className="w-4 h-4 text-sun" /> {inv.food_level}/20
-              </span>
-              <span className="inline-flex items-center gap-1.5">
-                <Sparkles className="w-4 h-4 text-brand" /> Level {inv.xp_level}
-              </span>
-              <span className="capitalize">{inv.dimension.replace("minecraft:", "").replace("_", " ")}</span>
+          <PlayerHead name={name} size={56} />
+          <div className="flex-1 min-w-0">
+            <h2 className="text-xl font-extrabold truncate">{name}'s inventory</h2>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <Stat icon={<Heart className="w-4 h-4 text-danger" />}>{inv.health.toFixed(0)}/20</Stat>
+              <Stat icon={<Drumstick className="w-4 h-4 text-sun" />}>{inv.food_level}/20</Stat>
+              <Stat icon={<Sparkles className="w-4 h-4 text-brand" />}>Level {inv.xp_level}</Stat>
+              <Stat icon={<Compass className="w-4 h-4 text-info" />}>
+                <span className="capitalize">
+                  {inv.dimension.replace("minecraft:", "").replace(/_/g, " ")}
+                </span>
+              </Stat>
             </div>
           </div>
-          <Button variant="ghost" onClick={closePlayerInventory} aria-label="Close" className="px-3">
+          <Button variant="ghost" onClick={closePlayerInventory} aria-label="Close" className="px-3 self-start">
             <X className="w-5 h-5" />
           </Button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-[1.25fr_1fr] gap-6 p-6">
           {/* Their items */}
-          <div className="flex flex-col gap-4">
-            <p className="text-sm text-soft">Click an item to take it away.</p>
-            <div className="grid grid-cols-9 gap-1.5">
-              {ARMOR_SLOTS.map((a) => (
-                <Slot key={a.slot} n={a.slot} label={a.label} />
-              ))}
+          <div className="rounded-2xl bg-bg/40 p-5 flex flex-col gap-5 self-start">
+            <div className="flex items-center justify-between">
+              <h3 className="font-bold text-lg flex items-center gap-2">
+                <Package className="w-5 h-5 text-soft" /> Carrying
+              </h3>
+              <span className="text-sm text-soft">
+                {itemCount === 0 ? "Nothing yet" : `${itemCount} ${itemCount === 1 ? "stack" : "stacks"}`}
+              </span>
             </div>
-            <div className="grid grid-cols-9 gap-1.5">
-              {Array.from({ length: 27 }, (_, i) => i + 9).map((n) => (
-                <Slot key={n} n={n} />
-              ))}
-            </div>
-            <div className="grid grid-cols-9 gap-1.5 pt-3 border-t border-line/60">
-              {Array.from({ length: 9 }, (_, i) => i).map((n) => (
-                <Slot key={n} n={n} label={String(n + 1)} />
-              ))}
-            </div>
+
+            <section>
+              <div className="mb-2 text-xs font-bold uppercase tracking-wide text-faint">Worn</div>
+              <div className="grid grid-cols-5 gap-2 max-w-sm">
+                {ARMOR_SLOTS.map((a) => slot(a.slot, a.label, a.icon))}
+              </div>
+            </section>
+
+            <section>
+              <div className="mb-2 text-xs font-bold uppercase tracking-wide text-faint">Backpack</div>
+              <div className="grid grid-cols-9 gap-1.5">
+                {Array.from({ length: 27 }, (_, i) => slot(i + 9))}
+              </div>
+            </section>
+
+            <section>
+              <div className="mb-2 text-xs font-bold uppercase tracking-wide text-faint">Hotbar</div>
+              <div className="grid grid-cols-9 gap-1.5">
+                {Array.from({ length: 9 }, (_, i) => slot(i, String(i + 1)))}
+              </div>
+            </section>
+
+            <p className="text-sm text-faint">Click an item to take it away.</p>
           </div>
 
           {/* Give items */}
-          <div className="rounded-2xl bg-bg/40 p-5 flex flex-col gap-3">
+          <div className="rounded-2xl bg-bg/40 p-5 flex flex-col gap-3 self-start">
             <h3 className="font-bold text-lg flex items-center gap-2">
               <Gift className="w-5 h-5 text-soft" /> Give an item
             </h3>
@@ -356,14 +411,16 @@ const InventoryModal: React.FC = () => {
                 ]}
               />
             </div>
-            <div className="grid grid-cols-2 gap-1.5 max-h-72 overflow-y-auto pr-1">
+            <div className="grid grid-cols-2 gap-1.5 max-h-80 overflow-y-auto pr-1">
               {items.map((m) => (
                 <button
                   key={m.id}
                   onClick={() => give(m.id, Math.min(amount, m.maxStack))}
-                  className="flex items-center gap-2.5 rounded-xl px-3 py-2.5 text-left hover:bg-raised transition-colors cursor-pointer"
+                  className="flex items-center gap-2.5 rounded-xl bg-raised/40 px-3 py-2.5 text-left hover:bg-raised transition-colors cursor-pointer"
                 >
-                  <m.icon className="w-5 h-5 text-soft shrink-0" />
+                  <span className="w-8 h-8 shrink-0 rounded-lg bg-bg/50 flex items-center justify-center">
+                    <m.icon className="w-4 h-4 text-soft" />
+                  </span>
                   <span className="font-bold text-sm truncate">{m.name}</span>
                 </button>
               ))}
