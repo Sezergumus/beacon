@@ -9,7 +9,6 @@ import {
   ExternalLink,
   Heart,
   Loader2,
-  MessageCircle,
   Puzzle,
   Scale,
   X,
@@ -25,6 +24,7 @@ import {
 import { formatCount } from "../../lib/format";
 import { useServerStore } from "../../stores/useServerStore";
 import { Button, Disclosure, Modal } from "../ui";
+import { DiscordIcon } from "../icons";
 import { Markdown } from "./Markdown";
 
 const CORE_LABELS: Record<ServerCore, string> = { paper: "Paper", fabric: "Fabric", neoforge: "NeoForge" };
@@ -325,7 +325,7 @@ export const ModDetailsModal: React.FC<{ hit: ModrinthSearchHit; onClose: () => 
               <LinkButton url={details.wiki_url} icon={<BookOpen className="w-4 h-4" />}>
                 Wiki
               </LinkButton>
-              <LinkButton url={details.discord_url} icon={<MessageCircle className="w-4 h-4" />}>
+              <LinkButton url={details.discord_url} icon={<DiscordIcon className="w-4 h-4" />}>
                 Discord
               </LinkButton>
             </div>
