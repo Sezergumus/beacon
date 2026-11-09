@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Check, Download, Loader2 } from "lucide-react";
 import { useServerStore } from "../../stores/useServerStore";
-import { AppSettings, ServerProperties, tauriApi, formatAppError } from "../../lib/tauri";
+import { ServerProperties, tauriApi, formatAppError } from "../../lib/tauri";
+import { useAppStore } from "../../stores/useAppStore";
 import {
   Button,
   Card,
@@ -54,17 +55,14 @@ export const SettingsView: React.FC<{ onNavigate?: (tab: ActiveTab) => void }> =
   // These are the settings new worlds start with, not the ones of any one world.
   const [draft, setDraft] = useState<ServerProperties>(DEFAULTS);
   const [installingJava, setInstallingJava] = useState(false);
-  const [appSettings, setAppSettings] = useState<AppSettings | null>(null);
+  const appSettings = useAppStore((s) => s.settings);
+  const saveApp = useAppStore((s) => s.update);
 
   useEffect(() => {
     tauriApi
       .getDefaultProperties()
       .then(setDraft)
       .catch((err) => pushToast("error", "Couldn't load your settings", formatAppError(err)));
-    tauriApi
-      .getAppSettings()
-      .then(setAppSettings)
-      .catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -88,18 +86,6 @@ export const SettingsView: React.FC<{ onNavigate?: (tab: ActiveTab) => void }> =
     key: K,
     value: ServerProperties[K],
   ) => setDraft((d) => ({ ...d, [key]: value }));
-
-  const saveApp = async (patch: Partial<AppSettings>) => {
-    if (!appSettings) return;
-    const next = { ...appSettings, ...patch };
-    setAppSettings(next);
-    try {
-      setAppSettings(await tauriApi.saveAppSettings(next));
-    } catch (err) {
-      setAppSettings(appSettings);
-      pushToast("error", "Couldn't save settings", formatAppError(err));
-    }
-  };
 
   const installJava = async () => {
     setInstallingJava(true);
@@ -311,6 +297,11 @@ export const SettingsView: React.FC<{ onNavigate?: (tab: ActiveTab) => void }> =
             onChange={(v) => saveApp({ close_to_tray: v })}
             label="Keep running in the background"
           />
+        </Row>
+        <Row title="Welcome tour" hint="Show the quick introduction again.">
+          <Button size="sm" onClick={() => saveApp({ onboarding_done: false })}>
+            Show again
+          </Button>
         </Row>
       </Card>
 

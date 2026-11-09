@@ -28,6 +28,9 @@ import { Button, StatusDot } from "./components/ui";
 import { useStartWorld } from "./lib/useStartWorld";
 import { BeaconArt } from "./components/BeaconArt";
 import { ErrorBoundary } from "./components/ErrorBoundary";
+import { Splash } from "./components/Splash";
+import { Onboarding } from "./components/Onboarding";
+import { useAppStore } from "./stores/useAppStore";
 
 export type ActiveTab =
   | "dashboard"
@@ -51,11 +54,29 @@ export const App: React.FC = () => {
   } = useServerStore();
   const { network, initializeNetworkStore } = useNetworkStore();
   const startWorld = useStartWorld();
+  const appSettings = useAppStore((s) => s.settings);
+  const loadAppSettings = useAppStore((s) => s.load);
+  const updateAppSettings = useAppStore((s) => s.update);
+  const [ready, setReady] = useState(false);
+  const [splashGone, setSplashGone] = useState(false);
 
   useEffect(() => {
-    initializeServerStore();
-    initializeNetworkStore();
+    // Hold the splash for a moment so it doesn't flash, but never get stuck on it.
+    const loading = Promise.allSettled([
+      initializeServerStore(),
+      initializeNetworkStore(),
+      loadAppSettings(),
+    ]);
+    const minimum = new Promise((r) => setTimeout(r, 700));
+    const giveUp = new Promise((r) => setTimeout(r, 10000));
+    Promise.race([Promise.all([loading, minimum]), giveUp]).then(() => setReady(true));
   }, []);
+
+  useEffect(() => {
+    if (!ready) return;
+    const t = setTimeout(() => setSplashGone(true), 350);
+    return () => clearTimeout(t);
+  }, [ready]);
 
   const playerCount = telemetry?.online_players.length ?? 0;
   const isOnline = status === "running";
@@ -194,6 +215,12 @@ export const App: React.FC = () => {
           {activeTab === "settings" && <SettingsView onNavigate={setActiveTab} />}
         </ErrorBoundary>
       </main>
+
+      {ready && appSettings && !appSettings.onboarding_done && (
+        <Onboarding onDone={() => updateAppSettings({ onboarding_done: true })} />
+      )}
+
+      {!splashGone && <Splash leaving={ready} />}
 
       {/* Toasts */}
       <div className="fixed bottom-5 right-5 z-50 flex flex-col gap-2 w-[360px] pointer-events-none">
