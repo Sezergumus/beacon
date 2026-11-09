@@ -245,7 +245,11 @@ export const WorldDetailsModal: React.FC<{
                 {details.spawn ? details.spawn.join(", ") : "—"}
               </Stat>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto] gap-3 mt-3">
+            <div
+              className={`grid grid-cols-1 gap-3 mt-3 ${
+                details.hardcore ? "sm:grid-cols-[1fr_auto]" : ""
+              }`}
+            >
               <div className="rounded-2xl bg-raised p-4 min-w-0 flex items-center justify-between gap-3">
                 <div className="min-w-0">
                   <div className="text-xs font-bold uppercase tracking-wide text-faint">Seed</div>
