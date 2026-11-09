@@ -275,8 +275,15 @@ async fn create_world(
     name: String,
     core: ServerCore,
     mc_version: String,
+    options: Option<worlds::NewWorldOptions>,
 ) -> AppResult<WorldMeta> {
-    worlds::create_world(&state.app_data_dir, &name, core, &mc_version)
+    worlds::create_world_with(
+        &state.app_data_dir,
+        &name,
+        core,
+        &mc_version,
+        &options.unwrap_or_default(),
+    )
 }
 
 /// How often (in minutes) a running world is saved to disk. 0 turns the extra saves off.

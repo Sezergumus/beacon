@@ -156,14 +156,24 @@ pub fn set_level_name(server_dir: &Path, id: &str) -> AppResult<()> {
     if !is_safe_id(id) {
         return Err(AppError::Custom("That isn't a valid world.".to_string()));
     }
+    set_property(server_dir, "level-name", id)
+}
+
+/// Set one `key=value` line in `server.properties`. Everything else in the file is kept.
+/// `value` must be a single line, since it is written into the file as-is.
+fn set_property(server_dir: &Path, key: &str, value: &str) -> AppResult<()> {
+    if value.chars().any(|c| c.is_control()) {
+        return Err(AppError::Custom("That value can't contain line breaks.".to_string()));
+    }
     let path = server_dir.join("server.properties");
     let existing = fs::read_to_string(&path).unwrap_or_default();
+    let prefix = format!("{}=", key);
     let mut out = String::new();
     let mut replaced = false;
     for line in existing.lines() {
-        if line.trim().starts_with("level-name=") {
+        if line.trim().starts_with(&prefix) {
             if !replaced {
-                out.push_str(&format!("level-name={}\n", id));
+                out.push_str(&format!("{}{}\n", prefix, value));
                 replaced = true;
             }
         } else {
@@ -172,7 +182,7 @@ pub fn set_level_name(server_dir: &Path, id: &str) -> AppResult<()> {
         }
     }
     if !replaced {
-        out.push_str(&format!("level-name={}\n", id));
+        out.push_str(&format!("{}{}\n", prefix, value));
     }
     fs::create_dir_all(server_dir)?;
     fs::write(path, out)?;
@@ -233,6 +243,35 @@ pub fn load_registry(app_data_dir: &Path) -> Vec<WorldMeta> {
         .unwrap_or_default()
 }
 
+const MAX_SEED_CHARS: usize = 64;
+
+/// Things that can only be chosen while a world is being made: Minecraft reads them
+/// when it generates the world on first start and ignores them afterwards.
+#[derive(Debug, Clone, Default, Deserialize)]
+pub struct NewWorldOptions {
+    /// Any text or number. Empty / missing means a random seed.
+    #[serde(default)]
+    pub seed: Option<String>,
+    /// One life: players become spectators when they die. Locks the difficulty to hard.
+    #[serde(default)]
+    pub hardcore: bool,
+}
+
+fn clean_seed(seed: Option<&str>) -> AppResult<Option<String>> {
+    let seed = seed.map(str::trim).filter(|s| !s.is_empty());
+    match seed {
+        None => Ok(None),
+        Some(s) if s.chars().any(|c| c.is_control()) => {
+            Err(AppError::Custom("The seed can't contain line breaks.".to_string()))
+        }
+        Some(s) if s.chars().count() > MAX_SEED_CHARS => Err(AppError::Custom(format!(
+            "That seed is too long (max {} characters).",
+            MAX_SEED_CHARS
+        ))),
+        Some(s) => Ok(Some(s.to_string())),
+    }
+}
+
 /// Make a new world with its own (still empty) server folder. Minecraft generates
 /// the world itself the first time it's started.
 pub fn create_world(
@@ -241,7 +280,19 @@ pub fn create_world(
     core: ServerCore,
     mc_version: &str,
 ) -> AppResult<WorldMeta> {
+    create_world_with(app_data_dir, name, core, mc_version, &NewWorldOptions::default())
+}
+
+/// Like [`create_world`], with a chosen seed and/or hardcore mode.
+pub fn create_world_with(
+    app_data_dir: &Path,
+    name: &str,
+    core: ServerCore,
+    mc_version: &str,
+    options: &NewWorldOptions,
+) -> AppResult<WorldMeta> {
     let name = clean_name(name)?;
+    let seed = clean_seed(options.seed.as_deref())?;
     if !is_safe_version(mc_version) {
         return Err(AppError::Custom(
             "That isn't a valid Minecraft version.".to_string(),
@@ -259,8 +310,17 @@ pub fn create_world(
     let inst = instance_dir(app_data_dir, &id);
     fs::create_dir_all(inst.join("mods"))?;
     fs::create_dir_all(inst.join("plugins"))?;
-    ServerProperties::load(&inst)?;
+    let mut props = ServerProperties::load(&inst)?;
     set_level_name(&inst, LEGACY_WORLD_ID)?;
+    if let Some(seed) = &seed {
+        set_property(&inst, "level-seed", seed)?;
+    }
+    if options.hardcore {
+        // Hardcore is always played on hard; keep the settings page in line with that.
+        props.difficulty = "hard".to_string();
+        props.save(&inst)?;
+        set_property(&inst, "hardcore", "true")?;
+    }
 
     let meta = WorldMeta {
         id,
@@ -910,6 +970,43 @@ mod tests {
         assert!(!ia.exists());
         assert!(ib.exists());
         assert!(delete_world(&app, &a.id).is_err());
+        let _ = fs::remove_dir_all(&app);
+    }
+
+    #[test]
+    fn new_world_can_have_a_seed_and_be_hardcore() {
+        let app = temp("options");
+
+        let plain = create_world(&app, "Plain", ServerCore::Paper, "1.21.1").unwrap();
+        let props = fs::read_to_string(instance_dir(&app, &plain.id).join("server.properties")).unwrap();
+        assert!(!props.contains("level-seed") && !props.contains("hardcore"));
+
+        let opts = NewWorldOptions { seed: Some("  glacier 42 ".to_string()), hardcore: true };
+        let w = create_world_with(&app, "One life", ServerCore::Paper, "1.21.1", &opts).unwrap();
+        let inst = instance_dir(&app, &w.id);
+        let props = fs::read_to_string(inst.join("server.properties")).unwrap();
+        assert!(props.contains("level-seed=glacier 42\n"));
+        assert!(props.contains("hardcore=true\n"));
+        assert!(props.contains("difficulty=hard\n"));
+        assert!(props.contains("level-name=world\n"));
+
+        // Saving the world's settings later must not drop either of them.
+        let saved = ServerProperties::load(&inst).unwrap();
+        saved.save(&inst).unwrap();
+        let props = fs::read_to_string(inst.join("server.properties")).unwrap();
+        assert!(props.contains("level-seed=glacier 42\n") && props.contains("hardcore=true\n"));
+
+        // A blank seed means random; bad seeds are refused before anything is made.
+        let blank = NewWorldOptions { seed: Some("   ".to_string()), hardcore: false };
+        let w = create_world_with(&app, "Blank", ServerCore::Paper, "1.21.1", &blank).unwrap();
+        let props = fs::read_to_string(instance_dir(&app, &w.id).join("server.properties")).unwrap();
+        assert!(!props.contains("level-seed"));
+        let before = load_registry(&app).len();
+        for bad in ["a\nhardcore=true".to_string(), "x".repeat(MAX_SEED_CHARS + 1)] {
+            let o = NewWorldOptions { seed: Some(bad), hardcore: false };
+            assert!(create_world_with(&app, "Bad", ServerCore::Paper, "1.21.1", &o).is_err());
+        }
+        assert_eq!(load_registry(&app).len(), before);
         let _ = fs::remove_dir_all(&app);
     }
 
