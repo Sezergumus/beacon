@@ -4,7 +4,7 @@ pub mod engine;
 pub mod error;
 pub mod network;
 
-use crate::app_settings::AppSettings;
+use crate::app_settings::{AppSettings, CloseAction};
 use crate::content::modrinth::{
     get_modrinth_project, identify_content_hashes, install_modrinth_project, install_mrpack_archive,
     list_installed_content, remove_installed_content, search_modrinth, InstalledContentItem,
@@ -678,15 +678,25 @@ pub fn run() {
                 let Some(state) = window.app_handle().try_state::<AppState>() else {
                     return;
                 };
-                let to_tray = state.settings.read().map(|s| s.close_to_tray).unwrap_or(false);
-                // Only stay in the background while a world is up; otherwise just quit.
-                let world_up = state
-                    .runner
-                    .status
-                    .try_lock()
-                    .map(|s| *s != ServerStatus::Stopped)
-                    .unwrap_or(true);
-                if to_tray && world_up {
+                let action = state
+                    .settings
+                    .read()
+                    .map(|s| s.close_action)
+                    .unwrap_or(CloseAction::Quit);
+                let world_up = || {
+                    state
+                        .runner
+                        .status
+                        .try_lock()
+                        .map(|s| *s != ServerStatus::Stopped)
+                        .unwrap_or(true)
+                };
+                let hide = match action {
+                    CloseAction::Quit => false,
+                    CloseAction::TrayWhenRunning => world_up(),
+                    CloseAction::TrayAlways => true,
+                };
+                if hide {
                     api.prevent_close();
                     let _ = window.hide();
                 }

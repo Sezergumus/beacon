@@ -18,7 +18,7 @@ export const useAppStore = create<AppStoreState>((set, get) => ({
       set({ settings: await tauriApi.getAppSettings() });
     } catch {
       // If this can't load, don't pester the user with a tour on every launch.
-      set({ settings: { close_to_tray: true, onboarding_done: true } });
+      set({ settings: { close_action: "tray_when_running", onboarding_done: true } });
     }
   },
 

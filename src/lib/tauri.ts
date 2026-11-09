@@ -220,7 +220,7 @@ export interface PlayerPlaytime {
 }
 
 export interface AppSettings {
-  close_to_tray: boolean;
+  close_action: "quit" | "tray_when_running" | "tray_always";
   onboarding_done: boolean;
 }
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Check, Download, Loader2 } from "lucide-react";
 import { useServerStore } from "../../stores/useServerStore";
-import { ServerProperties, tauriApi, formatAppError } from "../../lib/tauri";
+import { AppSettings, ServerProperties, tauriApi, formatAppError } from "../../lib/tauri";
 import { useAppStore } from "../../stores/useAppStore";
 import {
   Button,
@@ -289,13 +289,20 @@ export const SettingsView: React.FC<{ onNavigate?: (tab: ActiveTab) => void }> =
 
       <Card title="Beacon">
         <Row
-          title="Keep running in the background"
-          hint="Closing the window while a world is open hides Beacon in the system tray instead of stopping the world. Use the tray icon to open it again or quit."
+          title="When you close the window"
+          hint="Beacon in the system tray keeps your world running. Use the tray icon to open it again or quit."
         >
-          <Toggle
-            checked={appSettings?.close_to_tray ?? true}
-            onChange={(v) => saveApp({ close_to_tray: v })}
-            label="Keep running in the background"
+          <Select<AppSettings["close_action"]>
+            aria-label="When you close the window"
+            size="sm"
+            className="w-64"
+            value={appSettings?.close_action ?? "tray_when_running"}
+            onChange={(close_action) => saveApp({ close_action })}
+            options={[
+              { value: "quit", label: "Close Beacon" },
+              { value: "tray_when_running", label: "Minimize to tray if a world is open" },
+              { value: "tray_always", label: "Always minimize to tray" },
+            ]}
           />
         </Row>
         <Row title="Welcome tour" hint="Show the quick introduction again.">
