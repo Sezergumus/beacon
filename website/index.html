@@ -3,16 +3,17 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Beacon — Zero-Cost P2P Minecraft Server Manager</title>
+    <title>Beacon — Minecraft with friends, made easy</title>
     <meta
       name="description"
-      content="Host a modded or plugin-backed Minecraft Java Server in one click. Friends join with a 3-word room code—no port forwarding, no VPNs, and zero hosting cost."
+      content="Beacon turns your PC into a Minecraft server in one click. Share a short code and your friends join. No port forwarding, no monthly bills."
     />
     <link rel="icon" type="image/png" href="./assets/beacon-icon.png" />
+    <link rel="preload" href="./assets/fonts/jakarta-latin.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <!-- Shared SVG Color Matrix Filter for Beacon Artwork Illumination -->
+    <!-- Recolors the beacon artwork's core to the brand teal -->
     <svg width="0" height="0" style="position: absolute" aria-hidden="true" focusable="false">
       <defs>
         <filter id="beacon-teal-glow" color-interpolation-filters="sRGB">
@@ -24,978 +25,245 @@
       </defs>
     </svg>
 
-    <!-- ==================== Sticky Header ==================== -->
     <header class="site-header">
-      <div class="container nav-inner">
-        <a href="#" class="brand-link" aria-label="Beacon Home">
-          <span class="beacon-art beacon-art--nav" aria-hidden="true">
-            <span class="beacon-art__body">
-              <img src="./assets/beacon-mark.png" alt="" width="40" height="40" draggable="false" />
-            </span>
-          </span>
+      <div class="container nav">
+        <a href="#" class="brand" aria-label="Beacon home">
+          <img src="./assets/beacon-mark.png" alt="" width="32" height="32" />
           <span>Beacon</span>
-          <span class="brand-version" data-release-version>v0.1.0</span>
         </a>
-
-        <nav class="nav-links" aria-label="Primary Navigation">
-          <a href="#screenshots">Screenshots</a>
-          <a href="#how-it-works">How It Works</a>
+        <nav class="nav-links" aria-label="Primary">
+          <a href="#how">How it works</a>
           <a href="#features">Features</a>
-          <a href="#comparison">Why Beacon</a>
-          <a href="#architecture">Under the Hood</a>
+          <a href="#faq">FAQ</a>
         </nav>
-
-        <div class="nav-actions">
-          <a
-            href="https://github.com/Sezergumus/beacon"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="btn btn--secondary btn--sm"
-          >
-            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-              <path
-                d="M12 .5C5.65.5.5 5.65.5 12c0 5.09 3.29 9.4 7.86 10.92.58.1.79-.25.79-.56 0-.28-.01-1.02-.02-2-3.2.7-3.88-1.54-3.88-1.54-.52-1.33-1.28-1.68-1.28-1.68-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.76 2.7 1.25 3.36.96.1-.75.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.68 0-1.26.45-2.28 1.18-3.09-.12-.29-.51-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11.05 11.05 0 0 1 5.78 0c2.2-1.49 3.16-1.18 3.16-1.18.63 1.59.24 2.76.12 3.05.74.81 1.18 1.83 1.18 3.09 0 4.41-2.69 5.38-5.26 5.67.41.36.78 1.06.78 2.14 0 1.55-.01 2.79-.01 3.17 0 .31.21.67.8.56A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z"
-              />
-            </svg>
-            <span>GitHub Repo</span>
-          </a>
-          <a
-            href="https://github.com/Sezergumus/beacon/releases/latest"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="btn btn--primary btn--sm"
-            data-download-release
-          >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="2.5"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              aria-hidden="true"
-            >
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-              <polyline points="7 10 12 15 17 10" />
-              <line x1="12" y1="15" x2="12" y2="3" />
-            </svg>
-            <span>Download</span>
-          </a>
-        </div>
+        <a
+          href="https://github.com/Sezergumus/beacon/releases/latest"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="btn btn--primary btn--sm"
+          data-download-release
+        >
+          Download
+        </a>
       </div>
     </header>
 
     <main>
-      <!-- ==================== Hero Section ==================== -->
+      <!-- Hero -->
       <section class="hero">
+        <div class="container hero-inner">
+          <span class="pill">
+            <span class="dot" aria-hidden="true"></span>
+            Free &amp; open source · <span data-release-version>v0.1.0</span>
+          </span>
+
+          <h1>
+            Minecraft with friends,<br />
+            <span class="accent">without the hassle.</span>
+          </h1>
+
+          <p class="lead">
+            Beacon turns your PC into a Minecraft server in one click. Share a short code and your
+            friends hop in. No port forwarding, no monthly bills.
+          </p>
+
+          <div class="hero-actions">
+            <a
+              href="https://github.com/Sezergumus/beacon/releases/latest"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="btn btn--primary btn--lg"
+              data-download-release
+            >
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+              Download for Windows
+            </a>
+            <a
+              href="https://github.com/Sezergumus/beacon"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="btn btn--ghost btn--lg"
+            >
+              View on GitHub
+            </a>
+          </div>
+          <p class="fineprint">Windows 10 &amp; 11 · Java is set up for you</p>
+        </div>
+
         <div class="container">
-          <div class="hero-top">
-            <div class="eyebrow-pill">
-              <span class="status-dot" aria-hidden="true"></span>
-              <span>Zero-Cost P2P Minecraft Server Manager · Built with Tauri v2 &amp; Rust</span>
+          <figure class="hero-shot">
+            <img
+              src="./assets/screenshots/dashboard.png"
+              alt="Beacon's home screen: your world is open, with a room code to share and the list of friends playing"
+              width="2680"
+              height="1720"
+            />
+            <div class="code-chip" aria-hidden="true">
+              <span class="code-chip__label">Your code</span>
+              <span class="code-chip__value">crimson-dragon-42</span>
             </div>
-
-            <h1 class="hero-title">
-              Host a Minecraft world in one click.<br />
-              <span class="text-brand">Friends join with a code.</span>
-            </h1>
-
-            <p class="hero-subtitle">
-              No port forwarding, no third-party VPNs, and no monthly hosting bills. Beacon turns
-              your PC into an optimized Paper, Fabric, or NeoForge server and connects friends
-              straight through CGNAT and firewalls with a 3-word room code.
-            </p>
-
-            <div class="hero-cta-group">
-              <a
-                href="https://github.com/Sezergumus/beacon/releases/latest"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="btn btn--primary btn--lg"
-                data-download-release
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  aria-hidden="true"
-                >
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                  <polyline points="7 10 12 15 17 10" />
-                  <line x1="12" y1="15" x2="12" y2="3" />
-                </svg>
-                <span>Download Latest Release</span>
-              </a>
-
-              <a
-                href="https://github.com/Sezergumus/beacon"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="btn btn--secondary btn--lg"
-              >
-                <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                  <path
-                    d="M12 .5C5.65.5.5 5.65.5 12c0 5.09 3.29 9.4 7.86 10.92.58.1.79-.25.79-.56 0-.28-.01-1.02-.02-2-3.2.7-3.88-1.54-3.88-1.54-.52-1.33-1.28-1.68-1.28-1.68-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.76 2.7 1.25 3.36.96.1-.75.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.68 0-1.26.45-2.28 1.18-3.09-.12-.29-.51-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11.05 11.05 0 0 1 5.78 0c2.2-1.49 3.16-1.18 3.16-1.18.63 1.59.24 2.76.12 3.05.74.81 1.18 1.83 1.18 3.09 0 4.41-2.69 5.38-5.26 5.67.41.36.78 1.06.78 2.14 0 1.55-.01 2.79-.01 3.17 0 .31.21.67.8.56A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z"
-                  />
-                </svg>
-                <span>View on GitHub</span>
-              </a>
-            </div>
-
-            <div class="hero-meta">
-              <span>
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-                Windows 10 &amp; 11 (64-bit)
-              </span>
-              <span>
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-                Portable Java 21 Auto-Provisioned
-              </span>
-              <span>
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-                ~25 MB Idle App Footprint
-              </span>
-              <span>
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                >
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-                $0 Forever · Open Source
-              </span>
-            </div>
-          </div>
-
-          <!-- Interactive Live Beacon Status Card Preview -->
-          <div class="hero-live-card" aria-label="Interactive Beacon status card demo">
-            <div class="hero-live-top">
-              <span
-                id="hero-beacon-art"
-                class="beacon-art beacon-art--card"
-                data-state="running"
-                aria-hidden="true"
-              >
-                <span class="beacon-art__halo"></span>
-                <span class="beacon-art__body">
-                  <img
-                    src="./assets/beacon-card-front.png"
-                    alt=""
-                    width="96"
-                    height="96"
-                    draggable="false"
-                  />
-                  <span class="beacon-art__light" style="filter: url(#beacon-teal-glow)">
-                    <img
-                      src="./assets/beacon-card-front.png"
-                      alt=""
-                      width="96"
-                      height="96"
-                      draggable="false"
-                    />
-                  </span>
-                </span>
-              </span>
-
-              <div class="hero-live-info">
-                <div class="hero-live-title" id="hero-live-title">Your world is open</div>
-                <div class="hero-live-sub" id="hero-live-sub">
-                  “Survival with friends” · Friends can join with your code below.
-                </div>
-              </div>
-
-              <div class="state-segmented" role="group" aria-label="Preview Beacon light state">
-                <button type="button" class="is-active" data-beacon-state="running" aria-pressed="true">
-                  Running
-                </button>
-                <button type="button" data-beacon-state="starting" aria-pressed="false">
-                  Starting
-                </button>
-                <button type="button" data-beacon-state="stopped" aria-pressed="false">
-                  Stopped
-                </button>
-              </div>
-            </div>
-
-            <div class="hero-live-bottom">
-              <div style="display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 0.92rem">
-                <span id="hero-status-dot" class="status-dot"></span>
-                <span id="hero-status-text">World is open · 3 players online</span>
-              </div>
-
-              <div class="room-code-box">
-                <span class="room-code-label">Room Code</span>
-                <span class="room-code-value">crimson-dragon-42</span>
-                <button type="button" id="copy-room-code-btn" class="btn btn--primary btn--sm">
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    stroke-width="2.3"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  >
-                    <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
-                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                  </svg>
-                  <span id="copy-room-code-label">Copy code</span>
-                </button>
-              </div>
-            </div>
-          </div>
+          </figure>
         </div>
       </section>
 
-      <!-- ==================== Interactive App Screenshots Section ==================== -->
-      <section id="screenshots" class="section">
+      <!-- How it works -->
+      <section id="how" class="section">
         <div class="container">
-          <div class="section-header">
-            <span class="section-tag">Inside the App</span>
-            <h2 class="section-title">Designed for players, not sysadmins</h2>
-            <p class="section-desc">
-              Every screen in Beacon replaces complex config files and terminal commands with calm,
-              instant visual controls. Click any tab below—or click a screenshot to zoom in.
-            </p>
+          <div class="section-head">
+            <h2>Three steps to play together</h2>
+            <p>No IP addresses, no router settings. Just a code.</p>
           </div>
 
-          <!-- Interactive Tab Bar -->
-          <div class="showcase-tabs" role="tablist" aria-label="Application Views">
-            <button type="button" class="showcase-tab is-active" data-screen-tab="0" role="tab" aria-selected="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-              <span>Home</span>
-            </button>
-            <button type="button" class="showcase-tab" data-screen-tab="1" role="tab" aria-selected="false">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/></svg>
-              <span>Mods &amp; Modpacks</span>
-            </button>
-            <button type="button" class="showcase-tab" data-screen-tab="2" role="tab" aria-selected="false">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-              <span>Players</span>
-            </button>
-            <button type="button" class="showcase-tab" data-screen-tab="3" role="tab" aria-selected="false">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
-              <span>Live Inventory</span>
-            </button>
-            <button type="button" class="showcase-tab" data-screen-tab="4" role="tab" aria-selected="false">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-              <span>Worlds &amp; Co-Hosts</span>
-            </button>
-            <button type="button" class="showcase-tab" data-screen-tab="5" role="tab" aria-selected="false">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-              <span>Monitor &amp; Console</span>
-            </button>
-            <button type="button" class="showcase-tab" data-screen-tab="6" role="tab" aria-selected="false">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-              <span>Settings &amp; MOTD</span>
-            </button>
-          </div>
-
-          <!-- Active Screenshot Window -->
-          <div class="showcase-window">
-            <div class="window-titlebar">
-              <div class="window-dots" aria-hidden="true">
-                <span></span><span></span><span></span>
-              </div>
-              <div class="window-title" id="showcase-window-title">Beacon — Home</div>
-              <div class="window-zoom-hint">Click image to enlarge</div>
-            </div>
-
-            <div class="showcase-frame" id="showcase-frame" title="Click to view full-resolution screenshot">
-              <img
-                id="showcase-img"
-                src="./assets/screenshots/dashboard.png"
-                alt="Home — Start your world and invite friends in seconds"
-                width="1340"
-                height="860"
-              />
-            </div>
-
-            <div class="showcase-caption-bar">
-              <div class="showcase-caption-text">
-                <h3 id="showcase-title">Home — Start your world and invite friends in seconds</h3>
-                <p id="showcase-desc">
-                  Pick a world, press Start, and share your 3-word room code (like crimson-dragon-42).
-                  Quick buttons let you make it day, clear weather, save immediately, or check who is online.
-                </p>
-              </div>
-              <span class="brand-version" id="showcase-badge">One-Click Server &amp; P2P Code</span>
-            </div>
-          </div>
-
-          <!-- Full Screenshot Gallery Grid -->
-          <div class="gallery-grid" aria-label="All Application Screenshots">
-            <article class="gallery-card" data-gallery-idx="0" tabindex="0" role="button" aria-label="Zoom Home screenshot">
-              <div class="gallery-thumb">
-                <img src="./assets/screenshots/dashboard.png" alt="Beacon Home Dashboard" loading="lazy" />
-              </div>
-              <div class="gallery-body">
-                <div class="gallery-body-top">
-                  <h4>Home &amp; Room Codes</h4>
-                  <span class="gallery-badge">Dashboard</span>
-                </div>
-                <p>One-click start/stop, weather &amp; time controls, P2P room code sharing, and online players.</p>
-              </div>
-            </article>
-
-            <article class="gallery-card" data-gallery-idx="1" tabindex="0" role="button" aria-label="Zoom Mods screenshot">
-              <div class="gallery-thumb">
-                <img src="./assets/screenshots/mods.png" alt="Beacon Modrinth Mods Manager" loading="lazy" />
-              </div>
-              <div class="gallery-body">
-                <div class="gallery-body-top">
-                  <h4>Modrinth Mods &amp; Modpacks</h4>
-                  <span class="gallery-badge">Auto-Sync</span>
-                </div>
-                <p>Search and add mods, plugins, or .mrpack modpacks. Friends download matching mods automatically.</p>
-              </div>
-            </article>
-
-            <article class="gallery-card" data-gallery-idx="3" tabindex="0" role="button" aria-label="Zoom Live Inventory screenshot">
-              <div class="gallery-thumb">
-                <img src="./assets/screenshots/inventory.png" alt="Beacon Live NBT Inventory Inspector" loading="lazy" />
-              </div>
-              <div class="gallery-body">
-                <div class="gallery-body-top">
-                  <h4>Live NBT Inventory Inspector</h4>
-                  <span class="gallery-badge">Real-Time</span>
-                </div>
-                <p>View player health, food, XP, armor, and 36 inventory slots. Remove or gift items in one click.</p>
-              </div>
-            </article>
-
-            <article class="gallery-card" data-gallery-idx="2" tabindex="0" role="button" aria-label="Zoom Players screenshot">
-              <div class="gallery-thumb">
-                <img src="./assets/screenshots/players.png" alt="Beacon Player Management" loading="lazy" />
-              </div>
-              <div class="gallery-body">
-                <div class="gallery-body-top">
-                  <h4>Player Controls</h4>
-                  <span class="gallery-badge">Admin Tools</span>
-                </div>
-                <p>Switch game modes, teleport players, heal &amp; feed, toggle admin (OP), or kick and ban.</p>
-              </div>
-            </article>
-
-            <article class="gallery-card" data-gallery-idx="4" tabindex="0" role="button" aria-label="Zoom Worlds screenshot">
-              <div class="gallery-thumb">
-                <img src="./assets/screenshots/worlds.png" alt="Beacon Worlds and Trusted Co-Hosts" loading="lazy" />
-              </div>
-              <div class="gallery-body">
-                <div class="gallery-body-top">
-                  <h4>Worlds &amp; Co-Host Failover</h4>
-                  <span class="gallery-badge">Swarm Replicas</span>
-                </div>
-                <p>Manage Paper, Fabric, and NeoForge worlds, 10-minute backups, and 1-click host handover to friends.</p>
-              </div>
-            </article>
-
-            <article class="gallery-card" data-gallery-idx="5" tabindex="0" role="button" aria-label="Zoom Monitor screenshot">
-              <div class="gallery-thumb">
-                <img src="./assets/screenshots/monitor.png" alt="Beacon Monitor and Live Console" loading="lazy" />
-              </div>
-              <div class="gallery-body">
-                <div class="gallery-body-top">
-                  <h4>Monitor &amp; Live Console</h4>
-                  <span class="gallery-badge">Telemetry</span>
-                </div>
-                <p>Track ticks per second (TPS), RAM usage, CPU share, and color-formatted server logs with filters.</p>
-              </div>
-            </article>
-          </div>
+          <ol class="steps">
+            <li class="step reveal">
+              <span class="step-num">1</span>
+              <h3>Press Start</h3>
+              <p>Pick a world and hit Start. Beacon sets up Java and everything else for you.</p>
+            </li>
+            <li class="step reveal">
+              <span class="step-num">2</span>
+              <h3>Share your code</h3>
+              <p>You get a friendly three-word code like <code>crimson-dragon-42</code>. Send it to your friends.</p>
+            </li>
+            <li class="step reveal">
+              <span class="step-num">3</span>
+              <h3>Friends join</h3>
+              <p>They paste the code into Beacon, and your world appears under <em>LAN Worlds</em> in Minecraft.</p>
+            </li>
+          </ol>
         </div>
       </section>
 
-      <!-- ==================== How It Works Section ==================== -->
-      <section id="how-it-works" class="section section--alt">
-        <div class="container">
-          <div class="section-header">
-            <span class="section-tag">How It Works</span>
-            <h2 class="section-title">One app for both Hosts and Friends</h2>
-            <p class="section-desc">
-              The same lightweight executable acts as the server host and the friend client. Neither
-              side ever touches router settings or IP addresses.
-            </p>
-          </div>
-
-          <div class="roles-grid">
-            <!-- Host Role -->
-            <div class="role-panel">
-              <div class="role-header">
-                <div class="role-icon" aria-hidden="true">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-                </div>
-                <div>
-                  <h3>Hosting a World</h3>
-                  <p>From zero to an optimized server in one click</p>
-                </div>
-              </div>
-
-              <ol class="step-list">
-                <li class="step-item">
-                  <span class="step-num">1</span>
-                  <div class="step-content">
-                    <h4>Pick your world &amp; press Start</h4>
-                    <p>
-                      Choose <strong>Paper</strong>, <strong>Fabric</strong>, or <strong>NeoForge</strong>.
-                      Beacon silently downloads Portable Java 21 from Adoptium and tunes memory with
-                      Generational ZGC or Aikar's G1GC flags.
-                    </p>
-                  </div>
-                </li>
-                <li class="step-item">
-                  <span class="step-num">2</span>
-                  <div class="step-content">
-                    <h4>Share your 3-word Room Code</h4>
-                    <p>
-                      Click <strong>Get my code</strong> (or pick your own like <code>cozy-cabin-7</code>).
-                      Beacon publishes your encrypted QUIC node address to the BitTorrent Mainline DHT via
-                      <code>pkarr</code>.
-                    </p>
-                  </div>
-                </li>
-                <li class="step-item">
-                  <span class="step-num">3</span>
-                  <div class="step-content">
-                    <h4>Play &amp; let trusted friends keep a backup</h4>
-                    <p>
-                      Every 10 minutes, Beacon saves a compressed <code>.tar.zst</code> snapshot and syncs
-                      it to trusted co-hosts so the world can keep running even if you go offline.
-                    </p>
-                  </div>
-                </li>
-              </ol>
-            </div>
-
-            <!-- Friend Role -->
-            <div class="role-panel">
-              <div class="role-header">
-                <div class="role-icon role-icon--info" aria-hidden="true">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
-                </div>
-                <div>
-                  <h3>Joining a Friend</h3>
-                  <p>Shows up right inside Minecraft's LAN Worlds</p>
-                </div>
-              </div>
-
-              <ol class="step-list">
-                <li class="step-item">
-                  <span class="step-num step-num--info">1</span>
-                  <div class="step-content">
-                    <h4>Enter your friend's code</h4>
-                    <p>
-                      Paste <code>crimson-dragon-42</code> into Beacon's <strong>Join a friend</strong>
-                      card and press <strong>Join</strong>. Beacon punches through NAT &amp; firewalls over QUIC.
-                    </p>
-                  </div>
-                </li>
-                <li class="step-item">
-                  <span class="step-num step-num--info">2</span>
-                  <div class="step-content">
-                    <h4>Automatic pre-join mod sync</h4>
-                    <p>
-                      Playing modded? Beacon compares the server's mod manifest and downloads missing mods
-                      from Modrinth CDN or directly from the host over P2P with BLAKE3 verification.
-                    </p>
-                  </div>
-                </li>
-                <li class="step-item">
-                  <span class="step-num step-num--info">3</span>
-                  <div class="step-content">
-                    <h4>Click the server under LAN Worlds</h4>
-                    <p>
-                      Beacon broadcasts a local UDP multicast signal (<code>224.0.2.60:4445</code>). Open
-                      <strong>Minecraft → Multiplayer</strong> and join the world at the bottom under
-                      <strong>LAN Worlds</strong>!
-                    </p>
-                  </div>
-                </li>
-              </ol>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ==================== Core Features Section ==================== -->
+      <!-- Features -->
       <section id="features" class="section">
-        <div class="container">
-          <div class="section-header">
-            <span class="section-tag">Core Subsystems</span>
-            <h2 class="section-title">Everything you need to run a great server</h2>
-            <p class="section-desc">
-              Engineered in Rust and React 19 to eliminate every headache of hosting Minecraft at home.
-            </p>
-          </div>
-
-          <div class="features-grid">
-            <!-- Feature 1 -->
-            <article class="feature-card">
-              <div class="feature-icon">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
-              </div>
-              <h3>Serverless P2P Room Codes</h3>
+        <div class="container features">
+          <article class="feature reveal">
+            <div class="feature-text">
+              <span class="tag">Mods</span>
+              <h3>Mods just work</h3>
               <p>
-                Derives deterministic Ed25519 keys from a 3-word code and resolves peers via the
-                BitTorrent Mainline DHT. Punches through CGNAT and strict firewalls using Iroh QUIC
-                streams—no central server required.
+                Search Modrinth and add mods, plugins or whole modpacks in a click. When friends
+                join, Beacon gives them the exact same mods automatically.
               </p>
-              <div class="feature-tags">
-                <span class="feature-tag">iroh QUIC</span>
-                <span class="feature-tag">pkarr DHT</span>
-                <span class="feature-tag">Fake LAN Multicast</span>
-              </div>
-            </article>
-
-            <!-- Feature 2 -->
-            <article class="feature-card">
-              <div class="feature-icon feature-icon--sun">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
-              </div>
-              <h3>Zero-Config Java 21 &amp; JVM Tuning</h3>
-              <p>
-                Automatically provisions Portable Java 21 from the Adoptium API. Detects your free RAM
-                and injects Generational ZGC (<code>-XX:+UseZGC -XX:+ZGenerational</code>) for 6 GB+ or
-                Aikar's G1GC flags.
-              </p>
-              <div class="feature-tags">
-                <span class="feature-tag">Adoptium JRE 21</span>
-                <span class="feature-tag">Generational ZGC</span>
-                <span class="feature-tag">Paper / Fabric / NeoForge</span>
-              </div>
-            </article>
-
-            <!-- Feature 3 -->
-            <article class="feature-card">
-              <div class="feature-icon feature-icon--ok">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
-              </div>
-              <h3>Modrinth &amp; Pre-Join P2P Mod Sync</h3>
-              <p>
-                Install Modrinth mods, Paper plugins, and <code>.mrpack</code> modpacks with 12-stream
-                parallel downloads. Fabric servers auto-install Lithium &amp; FerriteCore, and friends
-                sync your exact mods before joining.
-              </p>
-              <div class="feature-tags">
-                <span class="feature-tag">Modrinth API</span>
-                <span class="feature-tag">SHA-512 &amp; BLAKE3</span>
-                <span class="feature-tag">.mrpack Support</span>
-              </div>
-            </article>
-
-            <!-- Feature 4 -->
-            <article class="feature-card">
-              <div class="feature-icon feature-icon--info">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2.1l4 4-4 4"/><path d="M3 12.2v-2a4 4 0 0 1 4-4h12.8M7 21.9l-4-4 4-4"/><path d="M21 11.8v2a4 4 0 0 1-4 4H4.2"/></svg>
-              </div>
-              <h3>Trusted Co-Hosts &amp; Crash Failover</h3>
-              <p>
-                Packages your world, mods, and properties into Zstd snapshots (<code>.tar.zst</code>)
-                every 10 minutes and replicates them to trusted friends. Hand over hosting in one click
-                or recover automatically in 15 seconds if the host crashes.
-              </p>
-              <div class="feature-tags">
-                <span class="feature-tag">Zstd Snapshots</span>
-                <span class="feature-tag">1-Click Handover</span>
-                <span class="feature-tag">15s Auto-Failover</span>
-              </div>
-            </article>
-
-            <!-- Feature 5 -->
-            <article class="feature-card">
-              <div class="feature-icon feature-icon--violet">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18"/><path d="M9 21V9"/></svg>
-              </div>
-              <h3>Live NBT Inventory Inspector</h3>
-              <p>
-                Watches <code>world/playerdata/&lt;uuid&gt;.dat</code> in real time, decompresses GZip
-                NBT, and renders an interactive 36-slot + armor + off-hand grid. Delete items with one
-                click or spawn items from a searchable catalog.
-              </p>
-              <div class="feature-tags">
-                <span class="feature-tag">fastnbt + flate2</span>
-                <span class="feature-tag">Live File Watcher</span>
-                <span class="feature-tag">Offline Player Lookup</span>
-              </div>
-            </article>
-
-            <!-- Feature 6 -->
-            <article class="feature-card">
-              <div class="feature-icon feature-icon--danger">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
-              </div>
-              <h3>Visual Rules, MOTD &amp; Tray Mode</h3>
-              <p>
-                Instant toggles for Keep Inventory, Cracked/Offline Mode, PvP, Difficulty, and
-                Whitelist. Includes a two-line Minecraft MOTD color editor, 64×64 server icon cropper,
-                and minimize-to-tray background hosting.
-              </p>
-              <div class="feature-tags">
-                <span class="feature-tag">Live MOTD Preview</span>
-                <span class="feature-tag">System Tray</span>
-                <span class="feature-tag">Graceful Shutdown</span>
-              </div>
-            </article>
-          </div>
-        </div>
-      </section>
-
-      <!-- ==================== Why Beacon Comparison Section ==================== -->
-      <section id="comparison" class="section section--alt">
-        <div class="container">
-          <div class="section-header">
-            <span class="section-tag">Why Beacon</span>
-            <h2 class="section-title">No subscriptions. No network headaches.</h2>
-            <p class="section-desc">
-              See how Beacon compares to traditional ways of hosting a Minecraft server for friends.
-            </p>
-          </div>
-
-          <div class="comparison-wrap">
-            <table class="comparison-table">
-              <thead>
-                <tr>
-                  <th>Capability</th>
-                  <th class="col-beacon">Beacon</th>
-                  <th>Paid Hosting</th>
-                  <th>Router Port Forwarding</th>
-                  <th>VPNs (Hamachi / Radmin)</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>Monthly Cost</td>
-                  <td class="col-beacon"><span class="badge-yes">$0 Forever</span></td>
-                  <td><span class="badge-no">$10 – $35 / month</span></td>
-                  <td><span class="badge-yes">$0</span></td>
-                  <td><span class="badge-warn">Free tier limits (e.g. 5 peers)</span></td>
-                </tr>
-                <tr>
-                  <td>Works Behind CGNAT &amp; Strict Firewalls</td>
-                  <td class="col-beacon"><span class="badge-yes">Yes (QUIC Hole Punching)</span></td>
-                  <td><span class="badge-yes">Yes</span></td>
-                  <td><span class="badge-no">No (Blocked by ISP CGNAT)</span></td>
-                  <td><span class="badge-warn">Requires virtual network driver</span></td>
-                </tr>
-                <tr>
-                  <td>Automatic Mod Sync for Joining Friends</td>
-                  <td class="col-beacon"><span class="badge-yes">Built-in (Modrinth + P2P)</span></td>
-                  <td><span class="badge-no">Manual zip / launcher setup</span></td>
-                  <td><span class="badge-no">Manual zip / launcher setup</span></td>
-                  <td><span class="badge-no">Manual zip / launcher setup</span></td>
-                </tr>
-                <tr>
-                  <td>Appears Automatically in LAN Worlds</td>
-                  <td class="col-beacon"><span class="badge-yes">Yes (Zero IP typing)</span></td>
-                  <td><span class="badge-no">No</span></td>
-                  <td><span class="badge-no">No (Exposes public IP)</span></td>
-                  <td><span class="badge-warn">Often blocked by Windows Firewall</span></td>
-                </tr>
-                <tr>
-                  <td>Co-Host Backup &amp; Crash Failover</td>
-                  <td class="col-beacon"><span class="badge-yes">Automatic .tar.zst Replicas</span></td>
-                  <td><span class="badge-warn">Manual FTP / panel backups</span></td>
-                  <td><span class="badge-no">Server dies if host PC sleeps</span></td>
-                  <td><span class="badge-no">Server dies if host PC sleeps</span></td>
-                </tr>
-                <tr>
-                  <td>Visual Live Inventory &amp; Player Inspector</td>
-                  <td class="col-beacon"><span class="badge-yes">Built-in Real-Time NBT Grid</span></td>
-                  <td><span class="badge-no">Console commands only</span></td>
-                  <td><span class="badge-no">Console commands only</span></td>
-                  <td><span class="badge-no">Console commands only</span></td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <!-- ==================== Under the Hood / Architecture ==================== -->
-      <section id="architecture" class="section">
-        <div class="container">
-          <div class="section-header">
-            <span class="section-tag">For the Curious</span>
-            <h2 class="section-title">Under the hood: Zero-cost P2P architecture</h2>
-            <p class="section-desc">
-              Built with Tauri v2 (Rust) and React 19. No Electron bloat, no Docker virtualization
-              overhead, and zero central servers to maintain.
-            </p>
-          </div>
-
-          <div class="arch-grid">
-            <div class="arch-card">
-              <h3>Technical Subsystems</h3>
-              <div class="arch-specs">
-                <div class="arch-spec-row">
-                  <strong>/aethermc/mc-tunnel/1 &amp; /aethermc/control/1</strong>
-                  <span>
-                    Multiplexes raw TCP-over-QUIC Minecraft game traffic (<code>tokio::io::copy_bidirectional</code>
-                    to <code>127.0.0.1:25565</code>) alongside JSON-RPC control, mod manifests, and
-                    migration heartbeats over a single Iroh QUIC connection.
-                  </span>
-                </div>
-                <div class="arch-spec-row">
-                  <strong>pkarr + BitTorrent Mainline DHT</strong>
-                  <span>
-                    Derives a deterministic Ed25519 keypair from your 3-word Room Code and publishes
-                    your <code>iroh::NodeAddr</code> to the global Mainline DHT—100% serverless discovery.
-                  </span>
-                </div>
-                <div class="arch-spec-row">
-                  <strong>UDP Multicast LAN Broadcaster (224.0.2.60:4445)</strong>
-                  <span>
-                    On the joining friend's PC, Beacon binds a local TCP proxy port and broadcasts
-                    <code>[MOTD]§a[P2P] Friend's Server[/MOTD][AD]&lt;port&gt;[/AD]</code> every 1.5s so
-                    Minecraft lists the world natively under LAN Worlds.
-                  </span>
-                </div>
-                <div class="arch-spec-row">
-                  <strong>Orphan-Safe Native JVM Supervisor</strong>
-                  <span>
-                    Manages Java 21 directly via <code>tokio::process::Command</code> (~25 MB app RAM)
-                    and hooks <code>RunEvent::ExitRequested</code> to flush worlds (<code>save-all flush</code>
-                    → <code>stop</code>) so orphan <code>java.exe</code> processes are never left behind.
-                  </span>
-                </div>
-              </div>
             </div>
+            <a class="feature-shot" href="./assets/screenshots/mods.png" target="_blank" rel="noopener">
+              <img src="./assets/screenshots/mods.png" alt="The Mods screen with Modrinth search" loading="lazy" width="2680" height="1720" />
+            </a>
+          </article>
 
-            <div class="arch-card">
-              <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px">
-                <h3>Build from Source</h3>
-                <button type="button" id="copy-build-cmds" class="btn btn--secondary btn--sm">
-                  Copy commands
-                </button>
-              </div>
-              <p style="color: rgb(var(--soft)); font-size: 0.94rem">
-                Beacon is open source on GitHub. Clone the repository to inspect the Rust backend,
-                run the test suite, or build your own installer.
+          <article class="feature feature--flip reveal">
+            <div class="feature-text">
+              <span class="tag">Players</span>
+              <h3>Look after your friends</h3>
+              <p>
+                Heal someone, switch game modes, or peek into a player's inventory and hand them an
+                item. No commands to memorize.
               </p>
-
-              <div class="code-block" aria-label="Build commands">
-                <div class="code-comment"># Clone the repository</div>
-                <div class="code-cmd">git clone https://github.com/Sezergumus/beacon.git</div>
-                <div class="code-cmd">cd beacon</div>
-                <br />
-                <div class="code-comment"># Install frontend dependencies</div>
-                <div class="code-cmd">npm install</div>
-                <br />
-                <div class="code-comment"># Run Rust unit &amp; integration tests</div>
-                <div class="code-cmd">cargo test --manifest-path src-tauri/Cargo.toml</div>
-                <br />
-                <div class="code-comment"># Launch Beacon in desktop development mode</div>
-                <div class="code-cmd">npm run tauri dev</div>
-              </div>
-
-              <div style="margin-top: auto; padding-top: 8px; display: flex; gap: 10px; flex-wrap: wrap">
-                <a
-                  href="https://github.com/Sezergumus/beacon"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="btn btn--secondary btn--md"
-                  style="flex: 1"
-                >
-                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                    <path
-                      d="M12 .5C5.65.5.5 5.65.5 12c0 5.09 3.29 9.4 7.86 10.92.58.1.79-.25.79-.56 0-.28-.01-1.02-.02-2-3.2.7-3.88-1.54-3.88-1.54-.52-1.33-1.28-1.68-1.28-1.68-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.76 2.7 1.25 3.36.96.1-.75.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.68 0-1.26.45-2.28 1.18-3.09-.12-.29-.51-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11.05 11.05 0 0 1 5.78 0c2.2-1.49 3.16-1.18 3.16-1.18.63 1.59.24 2.76.12 3.05.74.81 1.18 1.83 1.18 3.09 0 4.41-2.69 5.38-5.26 5.67.41.36.78 1.06.78 2.14 0 1.55-.01 2.79-.01 3.17 0 .31.21.67.8.56A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z"
-                    />
-                  </svg>
-                  <span>Explore Source on GitHub</span>
-                </a>
-              </div>
             </div>
+            <a class="feature-shot" href="./assets/screenshots/inventory.png" target="_blank" rel="noopener">
+              <img src="./assets/screenshots/inventory.png" alt="A player's inventory with a list of items to give" loading="lazy" width="2680" height="1720" />
+            </a>
+          </article>
+
+          <article class="feature reveal">
+            <div class="feature-text">
+              <span class="tag">Worlds</span>
+              <h3>Your world stays safe</h3>
+              <p>
+                Backups happen every 10 minutes. Friends you trust can keep a copy, so the world
+                keeps going even when your PC is off.
+              </p>
+            </div>
+            <a class="feature-shot" href="./assets/screenshots/worlds.png" target="_blank" rel="noopener">
+              <img src="./assets/screenshots/worlds.png" alt="The Worlds screen with backups and friends who keep a copy" loading="lazy" width="2680" height="1720" />
+            </a>
+          </article>
+        </div>
+      </section>
+
+      <!-- FAQ -->
+      <section id="faq" class="section">
+        <div class="container narrow">
+          <div class="section-head">
+            <h2>Questions</h2>
+          </div>
+
+          <div class="faq">
+            <details>
+              <summary>Is it really free?</summary>
+              <p>
+                Yes. The server runs on your own PC and friends connect to you directly, so there is
+                nothing to rent and no subscription.
+              </p>
+            </details>
+            <details>
+              <summary>Do my friends need Beacon too?</summary>
+              <p>
+                Yes, it's the same small app. They type in your code, Beacon connects them and syncs
+                any mods, then they just open Minecraft.
+              </p>
+            </details>
+            <details>
+              <summary>Which Minecraft works with it?</summary>
+              <p>
+                Minecraft: Java Edition. You can host plain, plugin (Paper), Fabric or NeoForge
+                worlds.
+              </p>
+            </details>
+            <details>
+              <summary>Windows shows a warning when I open it</summary>
+              <p>
+                Beacon isn't code-signed yet, so SmartScreen may ask on first launch. Click
+                <strong>More info</strong> → <strong>Run anyway</strong>.
+              </p>
+            </details>
           </div>
         </div>
       </section>
 
-      <!-- ==================== Download CTA Section ==================== -->
-      <section id="download" class="section">
+      <!-- Final call to action -->
+      <section class="section">
         <div class="container">
-          <div class="download-card">
-            <div class="download-left">
-              <span class="beacon-art beacon-art--lg" data-state="running" aria-hidden="true">
-                <span class="beacon-art__halo"></span>
-                <span class="beacon-art__body">
-                  <img
-                    src="./assets/beacon-card-front.png"
-                    alt=""
-                    width="112"
-                    height="112"
-                    draggable="false"
-                  />
-                  <span class="beacon-art__light" style="filter: url(#beacon-teal-glow)">
-                    <img
-                      src="./assets/beacon-card-front.png"
-                      alt=""
-                      width="112"
-                      height="112"
-                      draggable="false"
-                    />
-                  </span>
-                </span>
+          <div class="cta reveal">
+            <span class="beacon-art" aria-hidden="true">
+              <span class="beacon-art__halo"></span>
+              <img src="./assets/beacon-card-front.png" alt="" width="96" height="96" draggable="false" />
+              <span class="beacon-art__light" style="filter: url(#beacon-teal-glow)">
+                <img src="./assets/beacon-card-front.png" alt="" width="96" height="96" draggable="false" />
               </span>
-
-              <div class="download-copy">
-                <h2>Ready when you are.</h2>
-                <p>
-                  Download the Windows installer for Beacon, pick a world, and press Start. Share
-                  your room code with friends and play together in minutes.
-                </p>
-                <div class="smartscreen-note">
-                  <span>
-                    <strong>Note:</strong> Community builds are not code-signed. If Windows
-                    SmartScreen appears on first launch, click <strong>More info</strong> →
-                    <strong>Run anyway</strong>.
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div class="download-actions">
-              <a
-                href="https://github.com/Sezergumus/beacon/releases/latest"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="btn btn--primary btn--lg"
-                data-download-release
-              >
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  stroke-width="2.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  aria-hidden="true"
-                >
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                  <polyline points="7 10 12 15 17 10" />
-                  <line x1="12" y1="15" x2="12" y2="3" />
-                </svg>
-                <span>Download for Windows</span>
-              </a>
-
-              <a
-                href="https://github.com/Sezergumus/beacon/releases"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="btn btn--secondary btn--md"
-              >
-                <span>View All GitHub Releases</span>
-              </a>
-
-              <a
-                href="https://github.com/Sezergumus/beacon"
-                target="_blank"
-                rel="noopener noreferrer"
-                class="btn btn--ghost btn--sm"
-              >
-                <span>github.com/Sezergumus/beacon →</span>
-              </a>
-            </div>
+            </span>
+            <h2>Ready to play?</h2>
+            <p>Download Beacon, press Start, and send your code.</p>
+            <a
+              href="https://github.com/Sezergumus/beacon/releases/latest"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="btn btn--primary btn--lg"
+              data-download-release
+            >
+              Download for Windows
+            </a>
           </div>
         </div>
       </section>
     </main>
 
-    <!-- ==================== Footer ==================== -->
     <footer class="site-footer">
-      <div class="container footer-inner">
-        <div class="footer-brand">
-          <img src="./assets/beacon-mark.png" alt="Beacon" width="32" height="32" />
-          <div>
-            <strong style="color: rgb(var(--ink))">Beacon</strong>
-            <span style="margin-left: 8px; color: rgb(var(--faint))">
-              Zero-Cost P2P Minecraft Server Manager
-            </span>
-          </div>
-        </div>
-
+      <div class="container footer">
+        <span class="brand brand--small">
+          <img src="./assets/beacon-mark.png" alt="" width="22" height="22" />
+          Beacon
+        </span>
         <div class="footer-links">
-          <a href="#screenshots">Screenshots</a>
-          <a href="#how-it-works">How It Works</a>
-          <a href="#features">Features</a>
-          <a
-            href="https://github.com/Sezergumus/beacon/releases"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Releases
-          </a>
-          <a
-            href="https://github.com/Sezergumus/beacon"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            GitHub Repository
-          </a>
+          <a href="https://github.com/Sezergumus/beacon/releases" target="_blank" rel="noopener noreferrer">Releases</a>
+          <a href="https://github.com/Sezergumus/beacon" target="_blank" rel="noopener noreferrer">GitHub</a>
         </div>
       </div>
     </footer>
-
-    <!-- ==================== Full-Resolution Lightbox Modal ==================== -->
-    <div
-      id="lightbox"
-      class="lightbox"
-      role="dialog"
-      aria-modal="true"
-      aria-hidden="true"
-      aria-labelledby="lightbox-title"
-    >
-      <div class="lightbox-content">
-        <div class="lightbox-header">
-          <div id="lightbox-title" class="lightbox-title">Beacon Screenshot</div>
-          <div class="lightbox-controls">
-            <button type="button" id="lightbox-prev" class="btn btn--secondary btn--sm" aria-label="Previous screenshot">
-              ← Prev
-            </button>
-            <button type="button" id="lightbox-next" class="btn btn--secondary btn--sm" aria-label="Next screenshot">
-              Next →
-            </button>
-            <button type="button" id="lightbox-close" class="btn btn--ghost btn--sm" aria-label="Close preview">
-              ✕ Close
-            </button>
-          </div>
-        </div>
-        <div class="lightbox-body">
-          <img id="lightbox-img" src="./assets/screenshots/dashboard.png" alt="Beacon Screenshot" />
-        </div>
-      </div>
-    </div>
 
     <script src="./script.js"></script>
   </body>
