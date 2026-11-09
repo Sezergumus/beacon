@@ -219,6 +219,11 @@ export interface PlayerPlaytime {
   last_seen_ms: number | null;
 }
 
+export interface WhitelistEntry {
+  uuid: string;
+  name: string;
+}
+
 export interface WorldDetails {
   id: string;
   name: string;
@@ -435,6 +440,14 @@ export const tauriApi = {
 
   saveWorldProperties: (id: string, props: ServerProperties) =>
     invoke<ServerProperties>("save_world_properties", { id, props }),
+
+  getWhitelist: (id: string) => invoke<WhitelistEntry[]>("get_whitelist", { id }),
+
+  addWhitelistPlayer: (id: string, name: string) =>
+    invoke<WhitelistEntry[]>("add_whitelist_player", { id, name }),
+
+  removeWhitelistPlayer: (id: string, name: string) =>
+    invoke<WhitelistEntry[]>("remove_whitelist_player", { id, name }),
 
   /** The settings new worlds are made with (the Settings page). */
   getDefaultProperties: () => invoke<ServerProperties>("get_default_properties"),

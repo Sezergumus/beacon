@@ -15,6 +15,7 @@ use crate::engine::runner::{
     ServerCore, ServerLaunchConfig, ServerLogEntry, ServerRunner, ServerStatus, ServerTelemetry,
 };
 use crate::engine::versions;
+use crate::engine::whitelist::{self, WhitelistEntry};
 use crate::engine::worlds::{self, WorldEntry, WorldMeta};
 use crate::error::{AppError, AppResult};
 use crate::network::iroh_node::{NetworkStateSnapshot, P2pNetworkManager};
@@ -169,6 +170,75 @@ async fn save_world_properties(
         apply_properties_live(&state.runner, &saved).await;
     }
     Ok(saved)
+}
+
+/// The server folder of an existing world, and whether the server is running it right now.
+fn whitelist_target(state: &AppState, id: &str) -> AppResult<(PathBuf, bool)> {
+    if !worlds::is_safe_id(id) || worlds::load_registry(&state.app_data_dir).iter().all(|w| w.id != id) {
+        return Err(AppError::Custom("That world no longer exists.".to_string()));
+    }
+    let dir = worlds::instance_dir(&state.app_data_dir, id);
+    let live = state.runner.active_world_id().as_deref() == Some(id);
+    Ok((dir, live))
+}
+
+#[tauri::command]
+async fn get_whitelist(
+    state: State<'_, AppState>,
+    id: String,
+) -> AppResult<Vec<WhitelistEntry>> {
+    let (dir, _) = whitelist_target(&state, &id)?;
+    Ok(whitelist::load(&dir))
+}
+
+/// Add a friend to a world's whitelist. A running world is told through its console (it
+/// owns the file then); a stopped one has the file edited directly.
+#[tauri::command]
+async fn add_whitelist_player(
+    state: State<'_, AppState>,
+    id: String,
+    name: String,
+) -> AppResult<Vec<WhitelistEntry>> {
+    let name = whitelist::validate_name(&name)?;
+    let (dir, live) = whitelist_target(&state, &id)?;
+    if live && *state.runner.status.lock().await == ServerStatus::Running {
+        state
+            .runner
+            .send_command(&format!("whitelist add {}", name))
+            .await?;
+        tokio::time::sleep(std::time::Duration::from_millis(700)).await;
+        let list = whitelist::load(&dir);
+        if !whitelist::contains(&list, &name) {
+            return Err(AppError::Custom(format!(
+                "Couldn't add “{}”. If this world checks accounts, make sure the name is spelled exactly right.",
+                name
+            )));
+        }
+        return Ok(list);
+    }
+    let online_mode = ServerProperties::load(&dir)
+        .map(|p| p.online_mode)
+        .unwrap_or(false);
+    whitelist::add_offline(&dir, &name, online_mode).await
+}
+
+#[tauri::command]
+async fn remove_whitelist_player(
+    state: State<'_, AppState>,
+    id: String,
+    name: String,
+) -> AppResult<Vec<WhitelistEntry>> {
+    let name = whitelist::validate_name(&name)?;
+    let (dir, live) = whitelist_target(&state, &id)?;
+    if live && *state.runner.status.lock().await == ServerStatus::Running {
+        state
+            .runner
+            .send_command(&format!("whitelist remove {}", name))
+            .await?;
+        tokio::time::sleep(std::time::Duration::from_millis(700)).await;
+        return Ok(whitelist::load(&dir));
+    }
+    whitelist::remove_offline(&dir, &name)
 }
 
 /// The starting settings new worlds are made with (the Settings page).
@@ -547,6 +617,9 @@ pub fn run() {
             save_server_properties,
             get_world_details,
             save_world_properties,
+            get_whitelist,
+            add_whitelist_player,
+            remove_whitelist_player,
             get_default_properties,
             save_default_properties,
             get_server_icon,

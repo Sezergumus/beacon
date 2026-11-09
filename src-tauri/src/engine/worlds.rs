@@ -190,7 +190,7 @@ fn set_property(server_dir: &Path, key: &str, value: &str) -> AppResult<()> {
 }
 
 /// Ids end up in folder names, so only plain `[A-Za-z0-9_-]` is accepted.
-fn is_safe_id(id: &str) -> bool {
+pub(crate) fn is_safe_id(id: &str) -> bool {
     !id.is_empty()
         && id.len() <= 64
         && id

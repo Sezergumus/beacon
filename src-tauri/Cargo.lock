@@ -51,6 +51,7 @@ dependencies = [
  "iroh",
  "iroh-base",
  "iroh-blobs",
+ "md-5",
  "notify",
  "pkarr",
  "rand 0.8.8",

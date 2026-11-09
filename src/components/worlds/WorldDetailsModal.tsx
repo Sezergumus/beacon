@@ -4,6 +4,7 @@ import { formatAppError, ServerProperties, tauriApi, WorldDetails } from "../../
 import { useServerStore } from "../../stores/useServerStore";
 import { Button, EmptyState, Modal, PlayerHead, Row, Segmented, TextInput, Toggle } from "../ui";
 import { ServerAppearance } from "../ServerAppearance";
+import { WhitelistSection } from "./WhitelistSection";
 
 const CORE_LABELS = { paper: "Paper", fabric: "Fabric", neoforge: "NeoForge" } as const;
 
@@ -333,6 +334,17 @@ export const WorldDetailsModal: React.FC<{
                 <FileList files={otherFiles} />
               </div>
             )}
+          </Section>
+
+          <Section
+            title="Invited friends"
+            hint="Who can join when “Only invited friends” is on. Changes here apply straight away."
+          >
+            <WhitelistSection
+              worldId={worldId}
+              enabled={draft.white_list}
+              knownPlayers={details.players.flatMap((p) => (p.name ? [p.name] : []))}
+            />
           </Section>
 
           <Section title="Settings" hint="Saved to this world only.">
