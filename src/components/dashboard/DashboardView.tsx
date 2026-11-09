@@ -53,7 +53,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
     status,
     selectedCore,
     selectedVersion,
-    customRamMb,
     telemetry,
     jvmProgress,
     setSelectedCore,
@@ -86,7 +85,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
 
   const tps = telemetry?.tps ?? 20;
   const ramUsed = telemetry?.ram_used_mb ?? 0;
-  const ramMax = telemetry?.ram_allocated_mb ?? customRamMb;
   const players = telemetry?.online_players ?? [];
 
   const handleStart = useStartWorld();
@@ -142,7 +140,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
 
           {/* The three states share one grid cell, so the card keeps its height
               whichever one is showing and nothing below it jumps. */}
-          <div className="mt-6 pt-6 border-t border-line/60 grid">
+          <div className="mt-6 pt-6 border-t border-line/60 grid items-center">
             <div
               className={`col-start-1 row-start-1 ${isStopped ? "" : "invisible"}`}
               aria-hidden={!isStopped}
@@ -171,7 +169,14 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
                     ))}
                   </select>
                 </label>
-                <div className="flex items-center gap-3">
+                <div
+                  className="flex items-center gap-3"
+                  title={
+                    selectedCore === "paper"
+                      ? "Classic Minecraft with plugin support."
+                      : "Pick this if you want to add mods."
+                  }
+                >
                   <span className="font-bold text-soft">Type</span>
                   <Segmented<ServerCore>
                     value={selectedCore}
@@ -183,12 +188,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
                     ]}
                   />
                 </div>
-                <span className="text-sm text-faint">
-                  {selectedCore === "paper"
-                    ? "Classic Minecraft with plugin support."
-                    : "Pick this if you want to add mods."}{" "}
-                  Version, type, mods and plugins belong to this world only.
-                </span>
+                <span className="text-sm text-faint">Applies to this world only.</span>
               </div>
             </div>
             <div
@@ -199,7 +199,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-sm text-soft mr-auto">
                   {tps >= 18 ? "Running smoothly" : tps >= 14 ? "A bit busy" : "Lagging"} ·{" "}
-                  {(ramUsed / 1024).toFixed(1)} of {(ramMax / 1024).toFixed(1)} GB memory used
+                  Using {(ramUsed / 1024).toFixed(1)} GB of memory
                 </span>
                 <Button size="sm" onClick={() => sendCommand("time set day")} icon={<Sun className="w-4 h-4" />}>
                   Make it day
