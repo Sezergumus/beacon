@@ -9,6 +9,7 @@ import {
   MessageSquare,
   Package,
   Play,
+  Plus,
   Save,
   Square,
   Sun,
@@ -20,6 +21,7 @@ import { ServerCore } from "../../lib/tauri";
 import { useStartWorld } from "../../lib/useStartWorld";
 import { NewWorldForm } from "../worlds/NewWorldForm";
 import { BeaconArt } from "../BeaconArt";
+import { Select } from "../Select";
 import type { ActiveTab } from "../../App";
 import {
   Button,
@@ -118,54 +120,44 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
             )}
           </div>
 
-          {/* The three states share one grid cell, so the card keeps its height
-              whichever one is showing and nothing below it jumps. */}
-          <div className="mt-6 pt-6 border-t border-line/60 grid items-center">
-            <div
-              className={`col-start-1 row-start-1 ${isStopped ? "" : "invisible"}`}
-              aria-hidden={!isStopped}
-              inert={!isStopped}
-            >
-              <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-                <WorldPicker />
-                {worldInfo?.core && worldInfo.mc_version && (
-                  <span className="text-sm text-faint">
-                    {CORE_LABELS[worldInfo.core]} {worldInfo.mc_version}
-                  </span>
-                )}
-              </div>
+          {jvmProgress && (
+            <div className="mt-6">
+              <ProgressBar
+                percent={jvmProgress.percent}
+                label={jvmProgress.stage}
+                detail={`${jvmProgress.percent.toFixed(0)}%`}
+              />
             </div>
-            <div
-              className={`col-start-1 row-start-1 ${isRunning ? "" : "invisible"}`}
-              aria-hidden={!isRunning}
-              inert={!isRunning}
-            >
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-sm text-soft mr-auto">
-                  {tps >= 18 ? "Running smoothly" : tps >= 14 ? "A bit busy" : "Lagging"} ·{" "}
-                  Using {(ramUsed / 1024).toFixed(1)} GB of memory
+          )}
+
+          {isStopped && (
+            <div className="mt-6 pt-6 border-t border-line/60 flex flex-wrap items-center gap-x-6 gap-y-3">
+              <WorldPicker />
+              {worldInfo?.core && worldInfo.mc_version && (
+                <span className="text-sm text-faint">
+                  {CORE_LABELS[worldInfo.core]} {worldInfo.mc_version}
                 </span>
-                <Button size="sm" onClick={() => sendCommand("time set day")} icon={<Sun className="w-4 h-4" />}>
-                  Make it day
-                </Button>
-                <Button size="sm" onClick={() => sendCommand("weather clear")} icon={<CloudSun className="w-4 h-4" />}>
-                  Clear weather
-                </Button>
-                <Button size="sm" onClick={() => sendCommand("save-all flush")} icon={<Save className="w-4 h-4" />}>
-                  Save now
-                </Button>
-              </div>
-            </div>
-            <div className="col-start-1 row-start-1 pointer-events-none">
-              {jvmProgress && (
-                <ProgressBar
-                  percent={jvmProgress.percent}
-                  label={jvmProgress.stage}
-                  detail={`${jvmProgress.percent.toFixed(0)}%`}
-                />
               )}
             </div>
-          </div>
+          )}
+
+          {isRunning && (
+            <div className="mt-6 pt-6 border-t border-line/60 flex flex-wrap items-center gap-2">
+              <span className="text-sm text-soft mr-auto">
+                {tps >= 18 ? "Running smoothly" : tps >= 14 ? "A bit busy" : "Lagging"} ·{" "}
+                Using {(ramUsed / 1024).toFixed(1)} GB of memory
+              </span>
+              <Button size="sm" onClick={() => sendCommand("time set day")} icon={<Sun className="w-4 h-4" />}>
+                Make it day
+              </Button>
+              <Button size="sm" onClick={() => sendCommand("weather clear")} icon={<CloudSun className="w-4 h-4" />}>
+                Clear weather
+              </Button>
+              <Button size="sm" onClick={() => sendCommand("save-all flush")} icon={<Save className="w-4 h-4" />}>
+                Save now
+              </Button>
+            </div>
+          )}
         </section>
 
         {/* 2. Friends */}
@@ -275,21 +267,23 @@ const WorldPicker: React.FC = () => {
   }
 
   return (
-    <label className="flex items-center gap-3">
+    <div className="flex items-center gap-3">
       <span className="font-bold text-soft">World</span>
-      <select
+      <Select<string>
+        aria-label="World"
+        className="w-56"
         value={selectedWorldId ?? ""}
-        onChange={(e) => (e.target.value === NEW_WORLD ? setCreating(true) : selectWorld(e.target.value))}
-        className="h-11 max-w-[14rem] rounded-xl bg-raised px-3 font-bold text-ink cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand/60"
-      >
-        {live.map((w) => (
-          <option key={w.id} value={w.id}>
-            {w.name}
-          </option>
-        ))}
-        <option value={NEW_WORLD}>＋ New world…</option>
-      </select>
-    </label>
+        onChange={(v) => (v === NEW_WORLD ? setCreating(true) : selectWorld(v))}
+        options={[
+          ...live.map((w) => ({
+            value: w.id,
+            label: w.name,
+            hint: w.core && w.mc_version ? `${CORE_LABELS[w.core]} ${w.mc_version}` : undefined,
+          })),
+          { value: NEW_WORLD, label: "New world…", icon: <Plus className="w-4 h-4" />, dividerBefore: true },
+        ]}
+      />
+    </div>
   );
 };
 
