@@ -237,7 +237,7 @@ impl P2pNetworkManager {
             &self.app_data_dir,
             &code,
             &node_addr,
-            "AetherMC Host",
+            "Beacon Host",
             &mc_version,
             loader,
             upnp_mapped,
@@ -325,7 +325,7 @@ impl P2pNetworkManager {
                                 &app_data_snap,
                                 &room_code_snap,
                                 &addr,
-                                "AetherMC Host",
+                                "Beacon Host",
                                 &mc_ver,
                                 "paper",
                                 None,
@@ -872,7 +872,7 @@ async fn handle_host_control_connection(
                         host_node_id: ep_inner.node_id().to_string(),
                         mc_version,
                         loader,
-                        motd: "AetherMC P2P Server".to_string(),
+                        motd: "Beacon P2P Server".to_string(),
                     };
                     if let Ok(bytes) = serde_json::to_vec(&resp) {
                         let _ = send.write_all(&bytes).await;

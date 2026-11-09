@@ -1,12 +1,12 @@
 [package]
-name = "aethermc"
+name = "beacon"
 version = "0.1.0"
 description = "Zero-Cost P2P Minecraft Server Manager"
-authors = ["AetherMC Team"]
+authors = ["Beacon"]
 edition = "2021"
 
 [lib]
-name = "aethermc_lib"
+name = "beacon_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]

@@ -696,7 +696,7 @@ pub fn run() {
             let app_data_dir = app
                 .path()
                 .app_data_dir()
-                .unwrap_or_else(|_| dirs::data_local_dir().unwrap_or_else(|| PathBuf::from(".")).join("AetherMC"));
+                .unwrap_or_else(|_| dirs::data_local_dir().unwrap_or_else(|| PathBuf::from(".")).join("Beacon"));
             let _ = std::fs::create_dir_all(&app_data_dir);
             install_panic_log(&app_data_dir);
 
@@ -765,7 +765,7 @@ pub fn run() {
             trigger_host_migration,
         ])
         .build(tauri::generate_context!())
-        .expect("error while building AetherMC Tauri application");
+        .expect("error while building Beacon");
 
     app.run(|app_handle, event| {
         if let RunEvent::ExitRequested { .. } | RunEvent::Exit = event {

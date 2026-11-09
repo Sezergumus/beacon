@@ -34,48 +34,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "aethermc"
-version = "0.1.0"
-dependencies = [
- "anyhow",
- "base64 0.22.1",
- "blake3",
- "chrono",
- "dirs 5.0.1",
- "ed25519-dalek",
- "fastnbt",
- "flate2",
- "futures-util",
- "hex",
- "igd-next",
- "iroh",
- "iroh-base",
- "iroh-blobs",
- "md-5",
- "notify",
- "pkarr",
- "rand 0.8.8",
- "reqwest 0.12.28",
- "serde",
- "serde_json",
- "sha2",
- "socket2 0.5.10",
- "sysinfo",
- "tar",
- "tauri",
- "tauri-build",
- "tauri-plugin-opener",
- "tauri-plugin-single-instance",
- "thiserror 2.0.21",
- "tokio",
- "tracing",
- "url",
- "uuid",
- "zip",
- "zstd",
-]
-
-[[package]]
 name = "aho-corasick"
 version = "1.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -448,6 +406,48 @@ name = "base64ct"
 version = "1.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2af50177e190e07a26ab74f8b1efbfe2ef87da2116221318cb1c2e82baf7de06"
+
+[[package]]
+name = "beacon"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "base64 0.22.1",
+ "blake3",
+ "chrono",
+ "dirs 5.0.1",
+ "ed25519-dalek",
+ "fastnbt",
+ "flate2",
+ "futures-util",
+ "hex",
+ "igd-next",
+ "iroh",
+ "iroh-base",
+ "iroh-blobs",
+ "md-5",
+ "notify",
+ "pkarr",
+ "rand 0.8.8",
+ "reqwest 0.12.28",
+ "serde",
+ "serde_json",
+ "sha2",
+ "socket2 0.5.10",
+ "sysinfo",
+ "tar",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-opener",
+ "tauri-plugin-single-instance",
+ "thiserror 2.0.21",
+ "tokio",
+ "tracing",
+ "url",
+ "uuid",
+ "zip",
+ "zstd",
+]
 
 [[package]]
 name = "binary-merge"

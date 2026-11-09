@@ -219,7 +219,7 @@ pub async fn ensure_portable_jre(
     }
 
     let client = reqwest::Client::builder()
-        .user_agent("AetherMC/0.1.0 (Zero-Cost P2P Minecraft Server Manager)")
+        .user_agent("Beacon/0.1.0 (https://github.com/Sezergumus/beacon)")
         .build()?;
 
     let response = client.get(&url).send().await?;

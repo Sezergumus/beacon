@@ -74,7 +74,7 @@ pub async fn search_modrinth(
     loader: Option<&str>,
 ) -> AppResult<Vec<ModrinthSearchHit>> {
     let client = reqwest::Client::builder()
-        .user_agent("AetherMC/0.1.0 (https://github.com/aethermc)")
+        .user_agent("Beacon/0.1.0 (https://github.com/Sezergumus/beacon)")
         .build()?;
 
     let mut facets: Vec<Vec<String>> = Vec::new();
@@ -230,7 +230,7 @@ pub async fn get_modrinth_project(project_id_or_slug: &str) -> AppResult<Modrint
     }
 
     let client = reqwest::Client::builder()
-        .user_agent("AetherMC/0.1.0 (https://github.com/aethermc)")
+        .user_agent("Beacon/0.1.0 (https://github.com/Sezergumus/beacon)")
         .build()?;
     let project_url = format!("https://api.modrinth.com/v2/project/{}", project_id_or_slug);
     let versions_url = format!("{}/version", project_url);
@@ -335,7 +335,7 @@ pub async fn identify_content_hashes(hashes: Vec<String>) -> AppResult<HashMap<S
     }
 
     let client = reqwest::Client::builder()
-        .user_agent("AetherMC/0.1.0 (https://github.com/aethermc)")
+        .user_agent("Beacon/0.1.0 (https://github.com/Sezergumus/beacon)")
         .build()?;
     let resp: serde_json::Value = client
         .post("https://api.modrinth.com/v2/version_files")
@@ -367,7 +367,7 @@ pub async fn install_modrinth_project(
     project_type: &str,
 ) -> AppResult<String> {
     let client = reqwest::Client::builder()
-        .user_agent("AetherMC/0.1.0 (https://github.com/aethermc)")
+        .user_agent("Beacon/0.1.0 (https://github.com/Sezergumus/beacon)")
         .build()?;
 
     let versions_url = format!(
@@ -524,7 +524,7 @@ pub async fn install_mrpack_archive(
     let semaphore = Arc::new(Semaphore::new(12));
     let client = Arc::new(
         reqwest::Client::builder()
-            .user_agent("AetherMC/0.1.0 (https://github.com/aethermc)")
+            .user_agent("Beacon/0.1.0 (https://github.com/Sezergumus/beacon)")
             .build()?,
     );
 

@@ -175,7 +175,7 @@ pub async fn try_upnp_port_mapping(local_udp_port: u16) -> Option<SocketAddr> {
                 local_udp_port,
                 SocketAddr::V4(local_sa),
                 3600,
-                "AetherMC P2P QUIC",
+                "Beacon P2P QUIC",
             )
             .ok()?;
 
@@ -314,7 +314,7 @@ pub async fn resolve_room_from_dht(
     }
 
     Err(AppError::P2p(format!(
-        "Resolved DHT packet for '{}', but no valid AetherMC NodeAddr TXT record was present",
+        "Resolved DHT packet for '{}', but no valid Beacon NodeAddr TXT record was present",
         normalized_code
     )))
 }

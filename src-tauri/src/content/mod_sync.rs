@@ -100,7 +100,7 @@ pub async fn build_server_mod_manifest(
     // Resolve Modrinth CDN URLs by SHA-512 hash where available
     if !entries.is_empty() {
         let client = reqwest::Client::builder()
-            .user_agent("AetherMC/0.1.0 (https://github.com/aethermc)")
+            .user_agent("Beacon/0.1.0 (https://github.com/Sezergumus/beacon)")
             .build()?;
 
         for item in &mut entries {
@@ -194,7 +194,7 @@ pub async fn sync_client_mods_with_host(
     let semaphore = Arc::new(Semaphore::new(12));
     let client = Arc::new(
         reqwest::Client::builder()
-            .user_agent("AetherMC/0.1.0 (https://github.com/aethermc)")
+            .user_agent("Beacon/0.1.0 (https://github.com/Sezergumus/beacon)")
             .build()?,
     );
     let synced_counter = Arc::new(std::sync::atomic::AtomicUsize::new(0));

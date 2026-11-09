@@ -190,7 +190,7 @@ impl ServerProperties {
         map.insert("enable-command-block".to_string(), "true".to_string());
         map.insert("sync-chunk-writes".to_string(), "true".to_string());
 
-        let mut out = String::from("#Minecraft server properties (Managed by AetherMC)\n");
+        let mut out = String::from("#Minecraft server properties (Managed by Beacon)\n");
         for (k, v) in map {
             out.push_str(&format!("{}={}\n", k, v));
         }
