@@ -1,5 +1,6 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
+import { openUrl } from "@tauri-apps/plugin-opener";
 
 export type ServerCore = "paper" | "fabric" | "neoforge";
 export type ServerStatus = "stopped" | "provisioning" | "starting" | "running" | "stopping";
@@ -117,6 +118,54 @@ export interface ModrinthSearchHit {
   author: string;
   project_type: string;
   latest_version?: string | null;
+}
+
+export type ModrinthSideSupport = "required" | "optional" | "unsupported" | "unknown";
+
+export interface ModrinthGalleryImage {
+  url: string;
+  title?: string | null;
+  description?: string | null;
+  featured: boolean;
+}
+
+export interface ModrinthVersionInfo {
+  name: string;
+  version_number: string;
+  version_type: "release" | "beta" | "alpha" | string;
+  date_published: string;
+  game_versions: string[];
+  loaders: string[];
+  downloads: number;
+}
+
+/** Everything the details window of a mod / plugin / modpack shows. */
+export interface ModrinthProjectDetails {
+  project_id: string;
+  slug: string;
+  title: string;
+  description: string;
+  /** Long description: Markdown that may contain some HTML. */
+  body: string;
+  project_type: string;
+  categories: string[];
+  downloads: number;
+  followers: number;
+  icon_url?: string | null;
+  updated: string;
+  license?: string | null;
+  client_side: ModrinthSideSupport;
+  server_side: ModrinthSideSupport;
+  game_versions: string[];
+  loaders: string[];
+  gallery: ModrinthGalleryImage[];
+  source_url?: string | null;
+  issues_url?: string | null;
+  wiki_url?: string | null;
+  discord_url?: string | null;
+  page_url: string;
+  /** Newest first. */
+  versions: ModrinthVersionInfo[];
 }
 
 export interface InstalledContentItem {
@@ -255,6 +304,12 @@ export interface MigrationEvent {
   message: string;
 }
 
+/** Open a web page in the player's browser. Anything but http(s) is ignored. */
+export async function openExternal(url: string): Promise<void> {
+  if (!/^https?:\/\//i.test(url)) return;
+  await openUrl(url);
+}
+
 export function formatAppError(err: unknown): string {
   if (!err) return "Unknown error";
   if (typeof err === "string") return err;
@@ -325,6 +380,9 @@ export const tauriApi = {
       mcVersion: mcVersion ?? null,
       loader: loader ?? null,
     }),
+
+  getModrinthProject: (projectId: string) =>
+    invoke<ModrinthProjectDetails>("get_modrinth_project_details", { projectId }),
 
   installModrinthItem: (
     projectId: string,

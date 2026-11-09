@@ -1,17 +1,21 @@
 import React, { useEffect, useState } from "react";
 import { Check, Download, Loader2, Puzzle, Search, Trash2 } from "lucide-react";
 import { useServerStore } from "../../stores/useServerStore";
+import type { ModrinthSearchHit } from "../../lib/tauri";
+import { formatCount } from "../../lib/format";
 import { Button, Card, Disclosure, EmptyState, Page, ProgressBar, Segmented, TextInput } from "../ui";
 
-const prettyFileName = (filename: string) =>
+// The details window pulls in the Markdown renderer, so it loads only when first opened.
+const ModDetailsModal = React.lazy(() =>
+  import("./ModDetailsModal").then((m) => ({ default: m.ModDetailsModal })),
+);
+
+const prettyFileName =(filename: string) =>
   filename
     .replace(/\.(jar|zip|mrpack)$/i, "")
     .replace(/[-_]?(mc)?\d+(\.\d+)+.*$/i, "")
     .replace(/[-_]+/g, " ")
     .trim() || filename;
-
-const formatDownloads = (n: number) =>
-  n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M` : n >= 1000 ? `${Math.round(n / 1000)}k` : String(n);
 
 export const ModsView: React.FC = () => {
   const {
@@ -33,6 +37,7 @@ export const ModsView: React.FC = () => {
   const [kind, setKind] = useState<"single" | "modpack">("single");
   const [query, setQuery] = useState("");
   const [mrpackPath, setMrpackPath] = useState("");
+  const [detailsHit, setDetailsHit] = useState<ModrinthSearchHit | null>(null);
 
   const projectType = kind === "modpack" ? "modpack" : single;
   const noun = kind === "modpack" ? "modpacks" : `${single}s`;
@@ -104,7 +109,24 @@ export const ModsView: React.FC = () => {
         {searchResults.map((hit) => {
           const installing = installingSlug === hit.slug;
           return (
-            <div key={hit.project_id} className="rounded-2xl bg-surface p-4 flex items-center gap-4">
+            <div
+              key={hit.project_id}
+              role="button"
+              tabIndex={0}
+              aria-label={`Open details of ${hit.title}`}
+              onClick={(e) => {
+                // The Add button does its own thing.
+                if ((e.target as HTMLElement).closest("button")) return;
+                setDetailsHit(hit);
+              }}
+              onKeyDown={(e) => {
+                if (e.target === e.currentTarget && (e.key === "Enter" || e.key === " ")) {
+                  e.preventDefault();
+                  setDetailsHit(hit);
+                }
+              }}
+              className="rounded-2xl bg-surface p-4 flex items-center gap-4 cursor-pointer hover:bg-raised/60 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-brand/60"
+            >
               {hit.icon_url ? (
                 <img src={hit.icon_url} alt="" className="w-14 h-14 rounded-xl object-cover bg-raised shrink-0" />
               ) : (
@@ -115,7 +137,7 @@ export const ModsView: React.FC = () => {
               <div className="flex-1 min-w-0">
                 <div className="flex items-baseline gap-2">
                   <h3 className="font-bold truncate">{hit.title}</h3>
-                  <span className="text-xs text-faint shrink-0">{formatDownloads(hit.downloads)} downloads</span>
+                  <span className="text-xs text-faint shrink-0">{formatCount(hit.downloads)} downloads</span>
                 </div>
                 <p className="text-sm text-soft line-clamp-2 mt-0.5">{hit.description}</p>
               </div>
@@ -161,6 +183,12 @@ export const ModsView: React.FC = () => {
           </ul>
         )}
       </Card>
+
+      {detailsHit && (
+        <React.Suspense fallback={null}>
+          <ModDetailsModal hit={detailsHit} onClose={() => setDetailsHit(null)} />
+        </React.Suspense>
+      )}
 
       <div className="px-2 pb-4">
         <Disclosure label="Install a modpack file from my PC">
