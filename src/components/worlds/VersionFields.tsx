@@ -2,6 +2,7 @@ import React, { useEffect, useMemo } from "react";
 import { useServerStore } from "../../stores/useServerStore";
 import type { ServerCore } from "../../lib/tauri";
 import { Segmented } from "../ui";
+import { Select, type SelectOption } from "../Select";
 
 const VERSION_NOTES: Record<string, string> = {
   "1.21.1": "most popular",
@@ -34,39 +35,31 @@ export const VersionFields: React.FC<{
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [list, core, version]);
 
-  const groups = useMemo(() => {
-    const map = new Map<string, string[]>();
-    for (const v of list ?? []) {
-      const g = versionGroup(v);
-      map.set(g, [...(map.get(g) ?? []), v]);
-    }
-    return [...map.entries()];
-  }, [list]);
-  const newest = list?.[0];
+  const options = useMemo<SelectOption<string>[]>(
+    () =>
+      (list ?? []).map((v, i) => ({
+        value: v,
+        label: v,
+        group: `${versionGroup(v)}.x`,
+        hint: i === 0 ? "newest" : VERSION_NOTES[v],
+      })),
+    [list],
+  );
 
   return (
     <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
-      <label className="flex items-center gap-3">
+      <div className="flex items-center gap-3">
         <span className="font-bold text-soft">Version</span>
-        <select
+        <Select<string>
+          aria-label="Version"
+          className="w-52"
           value={version}
-          onChange={(e) => onChange(core, e.target.value)}
+          options={options}
+          placeholder="Loading versions…"
           disabled={!list}
-          className="h-11 rounded-xl bg-raised px-3 font-bold text-ink cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand/60 disabled:opacity-50"
-        >
-          {!list && <option value={version}>Loading versions…</option>}
-          {groups.map(([group, items]) => (
-            <optgroup key={group} label={`${group}.x`}>
-              {items.map((v) => (
-                <option key={v} value={v}>
-                  {v}
-                  {v === newest ? " (newest)" : VERSION_NOTES[v] ? ` (${VERSION_NOTES[v]})` : ""}
-                </option>
-              ))}
-            </optgroup>
-          ))}
-        </select>
-      </label>
+          onChange={(v) => onChange(core, v)}
+        />
+      </div>
       <div
         className="flex items-center gap-3"
         title={

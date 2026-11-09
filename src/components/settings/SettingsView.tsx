@@ -12,6 +12,7 @@ import {
   TextInput,
   Toggle,
 } from "../ui";
+import { Select } from "../Select";
 
 const DEFAULTS: ServerProperties = {
   online_mode: false,
@@ -211,18 +212,14 @@ export const SettingsView: React.FC = () => {
           title="Save while playing"
           hint="How often the world is saved to disk while friends are in it. The game also saves by itself now and then."
         >
-          <select
-            value={autosaveMins}
-            onChange={(e) => setAutosaveMins(Number(e.target.value))}
+          <Select<number>
             aria-label="Save while playing"
-            className="h-9 rounded-xl bg-raised px-3 text-sm font-bold text-ink cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand/60"
-          >
-            {AUTOSAVE_OPTIONS.map((o) => (
-              <option key={o.mins} value={o.mins}>
-                {o.label}
-              </option>
-            ))}
-          </select>
+            size="sm"
+            className="w-64"
+            value={autosaveMins}
+            onChange={setAutosaveMins}
+            options={AUTOSAVE_OPTIONS.map((o) => ({ value: o.mins, label: o.label }))}
+          />
         </Row>
         <Row
           title="Java"
