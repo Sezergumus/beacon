@@ -19,6 +19,7 @@ import { useNetworkStore } from "../../stores/useNetworkStore";
 import { ServerCore } from "../../lib/tauri";
 import { useStartWorld } from "../../lib/useStartWorld";
 import { NewWorldForm } from "../worlds/NewWorldForm";
+import { BeaconArt } from "../BeaconArt";
 import type { ActiveTab } from "../../App";
 import {
   Button,
@@ -110,18 +111,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
         {/* 1. Start / stop */}
         <section className="rounded-3xl bg-surface p-7">
           <div className="flex items-center gap-6">
-            <div className="relative w-24 h-24 shrink-0">
-              {isRunning && (
-                <div className="absolute inset-2 rounded-full bg-brand/25 blur-2xl" aria-hidden />
-              )}
-              <img
-                src="/beacon-icon.png"
-                alt=""
-                className={`relative w-24 h-24 object-contain transition-opacity ${
-                  isRunning ? "animate-beacon-float" : isStopped ? "opacity-70" : ""
-                }`}
-              />
-            </div>
+            <BeaconArt variant="card" status={status} />
             <div className="flex-1 min-w-0">
               <h1 className="text-3xl font-extrabold tracking-tight">{title}</h1>
               <p className="text-soft mt-1.5 text-base">{subtitle}</p>

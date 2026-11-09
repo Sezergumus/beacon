@@ -59,18 +59,68 @@
   border-radius: 9999px;
 }
 
-@keyframes beacon-float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-5px);
-  }
+.beacon-art {
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0;
+  pointer-events: none;
 }
 
-.animate-beacon-float {
-  animation: beacon-float 4s ease-in-out infinite;
+.beacon-art--sidebar {
+  width: 44px;
+  height: 44px;
+}
+
+.beacon-art--card {
+  width: 96px;
+  height: 96px;
+}
+
+.beacon-art__body,
+.beacon-art__light {
+  position: absolute;
+  inset: 0;
+}
+
+.beacon-art img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* The SVG color filter isolates the teal channels of an aligned image copy.
+   Only opacity animates; the frame and stone pedestal remain unlit. */
+.beacon-art__light {
+  opacity: 0;
+  -webkit-mask-image: radial-gradient(ellipse 38% 34% at 50% 38%, #000 45%, transparent 100%);
+  mask-image: radial-gradient(ellipse 38% 34% at 50% 38%, #000 45%, transparent 100%);
+}
+
+.beacon-art__halo {
+  position: absolute;
+  inset: 0 -6% 22%;
+  opacity: 0;
+  background: radial-gradient(ellipse, rgb(var(--brand) / 0.55), rgb(var(--brand) / 0.16) 36%, transparent 70%);
+}
+
+.beacon-art[data-state="running"] .beacon-art__light {
+  opacity: 1;
+}
+
+.beacon-art[data-state="running"] .beacon-art__halo {
+  opacity: 0.55;
+}
+
+/* A steady indicator replaces blinking when reduced motion is preferred. */
+.beacon-art[data-state="starting"] .beacon-art__light,
+.beacon-art[data-state="provisioning"] .beacon-art__light {
+  opacity: 0.55;
+}
+
+.beacon-art[data-state="starting"] .beacon-art__halo,
+.beacon-art[data-state="provisioning"] .beacon-art__halo {
+  opacity: 0.25;
 }
 
 @keyframes toast-in {
@@ -89,7 +139,6 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .animate-beacon-float,
   .animate-toast-in {
     animation: none;
   }

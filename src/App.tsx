@@ -26,6 +26,7 @@ import { MonitorView } from "./components/monitor/MonitorView";
 import { SettingsView } from "./components/settings/SettingsView";
 import { Button, StatusDot } from "./components/ui";
 import { useStartWorld } from "./lib/useStartWorld";
+import { BeaconArt } from "./components/BeaconArt";
 
 export type ActiveTab =
   | "dashboard"
@@ -93,7 +94,7 @@ export const App: React.FC = () => {
     <div className="h-screen w-screen bg-bg text-ink flex overflow-hidden select-none">
       <aside className="w-60 shrink-0 bg-surface/60 flex flex-col p-4">
         <div className="flex items-center gap-3 px-2 py-2 mb-6">
-          <img src="/beacon-icon.png" alt="" className="w-10 h-10 object-contain" />
+          <BeaconArt variant="sidebar" />
           <span className="text-xl font-extrabold tracking-tight">Beacon</span>
         </div>
 
