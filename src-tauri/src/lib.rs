@@ -4,8 +4,9 @@ pub mod error;
 pub mod network;
 
 use crate::content::modrinth::{
-    install_modrinth_project, install_mrpack_archive, list_installed_content,
-    remove_installed_content, search_modrinth, InstalledContentItem, ModrinthSearchHit,
+    get_modrinth_project, install_modrinth_project, install_mrpack_archive,
+    list_installed_content, remove_installed_content, search_modrinth, InstalledContentItem,
+    ModrinthProjectDetails, ModrinthSearchHit,
 };
 use crate::engine::jvm::{detect_hardware_profile, ensure_portable_jre, HardwareProfile};
 use crate::engine::nbt_inspector::{inspect_player_nbt, PlayerInventoryData};
@@ -210,6 +211,11 @@ async fn search_modrinth_catalog(
         loader.as_deref(),
     )
     .await
+}
+
+#[tauri::command]
+async fn get_modrinth_project_details(project_id: String) -> AppResult<ModrinthProjectDetails> {
+    get_modrinth_project(&project_id).await
 }
 
 #[tauri::command]
@@ -447,6 +453,7 @@ async fn trigger_host_migration(
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let app = tauri::Builder::default()
+        .plugin(tauri_plugin_opener::init())
         .setup(|app| {
             let app_data_dir = app
                 .path()
@@ -483,6 +490,7 @@ pub fn run() {
             run_player_action,
             inspect_player_inventory,
             search_modrinth_catalog,
+            get_modrinth_project_details,
             install_modrinth_item,
             install_local_mrpack,
             get_installed_content,

@@ -152,6 +152,174 @@ pub async fn search_modrinth(
     Ok(results)
 }
 
+#[derive(Debug, Clone, Serialize)]
+pub struct ModrinthGalleryImage {
+    pub url: String,
+    pub title: Option<String>,
+    pub description: Option<String>,
+    pub featured: bool,
+}
+
+#[derive(Debug, Clone, Serialize)]
+pub struct ModrinthVersionInfo {
+    pub name: String,
+    pub version_number: String,
+    /// `release` | `beta` | `alpha`
+    pub version_type: String,
+    pub date_published: String,
+    pub game_versions: Vec<String>,
+    pub loaders: Vec<String>,
+    pub downloads: u64,
+}
+
+/// Everything the details window of a mod / plugin / modpack shows.
+#[derive(Debug, Clone, Serialize)]
+pub struct ModrinthProjectDetails {
+    pub project_id: String,
+    pub slug: String,
+    pub title: String,
+    pub description: String,
+    /// The long description (Markdown, may contain some HTML).
+    pub body: String,
+    pub project_type: String,
+    pub categories: Vec<String>,
+    pub downloads: u64,
+    pub followers: u64,
+    pub icon_url: Option<String>,
+    pub updated: String,
+    pub license: Option<String>,
+    /// `required` | `optional` | `unsupported` | `unknown`
+    pub client_side: String,
+    pub server_side: String,
+    pub game_versions: Vec<String>,
+    pub loaders: Vec<String>,
+    pub gallery: Vec<ModrinthGalleryImage>,
+    pub source_url: Option<String>,
+    pub issues_url: Option<String>,
+    pub wiki_url: Option<String>,
+    pub discord_url: Option<String>,
+    /// The project's page on modrinth.com.
+    pub page_url: String,
+    /// Newest first, at most [`MAX_DETAIL_VERSIONS`].
+    pub versions: Vec<ModrinthVersionInfo>,
+}
+
+const MAX_DETAIL_VERSIONS: usize = 12;
+
+fn json_strings(v: &serde_json::Value) -> Vec<String> {
+    v.as_array()
+        .map(|a| a.iter().filter_map(|s| s.as_str().map(str::to_string)).collect())
+        .unwrap_or_default()
+}
+
+/// Empty strings from the API count as "not set".
+fn json_opt_string(v: &serde_json::Value) -> Option<String> {
+    v.as_str().filter(|s| !s.trim().is_empty()).map(str::to_string)
+}
+
+/// Load a project's full page data from Modrinth: description, gallery, links, versions.
+pub async fn get_modrinth_project(project_id_or_slug: &str) -> AppResult<ModrinthProjectDetails> {
+    // The id goes into the request path, so only plain ids / slugs are accepted.
+    if project_id_or_slug.is_empty()
+        || project_id_or_slug.len() > 64
+        || !project_id_or_slug
+            .chars()
+            .all(|c| c.is_ascii_alphanumeric() || c == '-' || c == '_')
+    {
+        return Err(AppError::Content("That isn't a valid Modrinth project.".to_string()));
+    }
+
+    let client = reqwest::Client::builder()
+        .user_agent("AetherMC/0.1.0 (https://github.com/aethermc)")
+        .build()?;
+    let project_url = format!("https://api.modrinth.com/v2/project/{}", project_id_or_slug);
+    let versions_url = format!("{}/version", project_url);
+
+    let (project, versions) = tokio::join!(
+        async { client.get(&project_url).send().await?.error_for_status()?.json::<serde_json::Value>().await },
+        async { client.get(&versions_url).send().await?.error_for_status()?.json::<serde_json::Value>().await },
+    );
+    let p = project?;
+    // The version list is a nice-to-have; the page still opens without it.
+    let versions = versions.unwrap_or(serde_json::Value::Null);
+
+    let project_type = p["project_type"].as_str().unwrap_or("mod").to_string();
+    let slug = p["slug"].as_str().unwrap_or(project_id_or_slug).to_string();
+
+    let mut categories = json_strings(&p["categories"]);
+    for extra in json_strings(&p["additional_categories"]) {
+        if !categories.contains(&extra) {
+            categories.push(extra);
+        }
+    }
+
+    let gallery = p["gallery"]
+        .as_array()
+        .map(|a| {
+            let mut images: Vec<(i64, ModrinthGalleryImage)> = a
+                .iter()
+                .filter_map(|g| {
+                    Some((
+                        g["ordering"].as_i64().unwrap_or(0),
+                        ModrinthGalleryImage {
+                            url: json_opt_string(&g["url"])?,
+                            title: json_opt_string(&g["title"]),
+                            description: json_opt_string(&g["description"]),
+                            featured: g["featured"].as_bool().unwrap_or(false),
+                        },
+                    ))
+                })
+                .collect();
+            images.sort_by_key(|(order, _)| *order);
+            images.into_iter().map(|(_, img)| img).collect()
+        })
+        .unwrap_or_default();
+
+    let versions = versions
+        .as_array()
+        .map(|a| {
+            a.iter()
+                .take(MAX_DETAIL_VERSIONS)
+                .map(|v| ModrinthVersionInfo {
+                    name: v["name"].as_str().unwrap_or_default().to_string(),
+                    version_number: v["version_number"].as_str().unwrap_or_default().to_string(),
+                    version_type: v["version_type"].as_str().unwrap_or("release").to_string(),
+                    date_published: v["date_published"].as_str().unwrap_or_default().to_string(),
+                    game_versions: json_strings(&v["game_versions"]),
+                    loaders: json_strings(&v["loaders"]),
+                    downloads: v["downloads"].as_u64().unwrap_or(0),
+                })
+                .collect()
+        })
+        .unwrap_or_default();
+
+    Ok(ModrinthProjectDetails {
+        project_id: p["id"].as_str().unwrap_or_default().to_string(),
+        title: p["title"].as_str().unwrap_or_default().to_string(),
+        description: p["description"].as_str().unwrap_or_default().to_string(),
+        body: p["body"].as_str().unwrap_or_default().to_string(),
+        page_url: format!("https://modrinth.com/{}/{}", project_type, slug),
+        project_type,
+        slug,
+        categories,
+        downloads: p["downloads"].as_u64().unwrap_or(0),
+        followers: p["followers"].as_u64().unwrap_or(0),
+        icon_url: json_opt_string(&p["icon_url"]),
+        updated: p["updated"].as_str().unwrap_or_default().to_string(),
+        license: json_opt_string(&p["license"]["name"]).or_else(|| json_opt_string(&p["license"]["id"])),
+        client_side: p["client_side"].as_str().unwrap_or("unknown").to_string(),
+        server_side: p["server_side"].as_str().unwrap_or("unknown").to_string(),
+        game_versions: json_strings(&p["game_versions"]),
+        loaders: json_strings(&p["loaders"]),
+        gallery,
+        source_url: json_opt_string(&p["source_url"]),
+        issues_url: json_opt_string(&p["issues_url"]),
+        wiki_url: json_opt_string(&p["wiki_url"]),
+        discord_url: json_opt_string(&p["discord_url"]),
+        versions,
+    })
+}
+
 /// Install a Modrinth project (mod, plugin, or `.mrpack` modpack) with SHA-512 verification.
 pub async fn install_modrinth_project(
     server_dir: &Path,

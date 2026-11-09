@@ -53,3 +53,4 @@ socket2 = { version = "0.5", features = ["all"] }
 url = "2.5"
 dirs = "5.0"
 tracing = "0.1"
+tauri-plugin-opener = "2"
