@@ -27,6 +27,7 @@ import { SettingsView } from "./components/settings/SettingsView";
 import { Button, StatusDot } from "./components/ui";
 import { useStartWorld } from "./lib/useStartWorld";
 import { BeaconArt } from "./components/BeaconArt";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 
 export type ActiveTab =
   | "dashboard"
@@ -184,12 +185,14 @@ export const App: React.FC = () => {
       </aside>
 
       <main className="flex-1 h-full overflow-hidden">
-        {activeTab === "dashboard" && <DashboardView onNavigate={setActiveTab} />}
-        {activeTab === "players" && <PlayersView />}
-        {activeTab === "mods" && <ModsView />}
-        {activeTab === "monitor" && <MonitorView />}
-        {activeTab === "worlds" && <WorldsView />}
-        {activeTab === "settings" && <SettingsView onNavigate={setActiveTab} />}
+        <ErrorBoundary resetKeys={[activeTab]}>
+          {activeTab === "dashboard" && <DashboardView onNavigate={setActiveTab} />}
+          {activeTab === "players" && <PlayersView />}
+          {activeTab === "mods" && <ModsView />}
+          {activeTab === "monitor" && <MonitorView />}
+          {activeTab === "worlds" && <WorldsView />}
+          {activeTab === "settings" && <SettingsView onNavigate={setActiveTab} />}
+        </ErrorBoundary>
       </main>
 
       {/* Toasts */}

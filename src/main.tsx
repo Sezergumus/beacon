@@ -4,11 +4,16 @@ import App from "./App";
 import "@fontsource-variable/nunito";
 import "./index.css";
 import { disableBrowserBehavior } from "./lib/disableBrowserBehavior";
+import { installGlobalErrorHandlers } from "./lib/globalErrors";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 
 disableBrowserBehavior();
+installGlobalErrorHandlers();
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
-    <App />
+    <ErrorBoundary variant="app">
+      <App />
+    </ErrorBoundary>
   </React.StrictMode>
 );

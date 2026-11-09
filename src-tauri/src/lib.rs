@@ -44,6 +44,28 @@ fn show_main_window(app: &AppHandle) {
     }
 }
 
+/// Write any crash inside the app to `crash.log` next to the worlds, so a bug report
+/// has something to attach. The normal panic message still goes to the console.
+fn install_panic_log(app_data_dir: &std::path::Path) {
+    let path = app_data_dir.join("crash.log");
+    let default_hook = std::panic::take_hook();
+    std::panic::set_hook(Box::new(move |info| {
+        use std::io::Write;
+        if let Ok(mut f) = std::fs::OpenOptions::new().create(true).append(true).open(&path) {
+            let _ = writeln!(
+                f,
+                "[{}] {}
+{}
+",
+                chrono::Local::now().format("%Y-%m-%d %H:%M:%S"),
+                info,
+                std::backtrace::Backtrace::force_capture()
+            );
+        }
+        default_hook(info);
+    }));
+}
+
 fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
     let open = MenuItem::with_id(app, "open", "Open Beacon", true, None::<&str>)?;
     let quit = MenuItem::with_id(app, "quit", "Quit Beacon", true, None::<&str>)?;
@@ -676,6 +698,7 @@ pub fn run() {
                 .app_data_dir()
                 .unwrap_or_else(|_| dirs::data_local_dir().unwrap_or_else(|| PathBuf::from(".")).join("AetherMC"));
             let _ = std::fs::create_dir_all(&app_data_dir);
+            install_panic_log(&app_data_dir);
 
             // Worlds used to share one server folder; give each its own (runs once).
             worlds::migrate_legacy(&app_data_dir);
