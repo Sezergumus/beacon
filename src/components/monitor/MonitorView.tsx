@@ -68,11 +68,6 @@ export const MonitorView: React.FC = () => {
     tps >= 18 ? { t: "Running smoothly", tone: "ok" as const }
     : tps >= 14 ? { t: "A bit busy", tone: "warn" as const }
     : { t: "Lagging", tone: "bad" as const };
-  const ramPct = (ramUsed / ramMax) * 100;
-  const ramNote =
-    ramPct >= 90 ? { t: "Almost full", tone: "bad" as const }
-    : ramPct >= 75 ? { t: "Getting full", tone: "warn" as const }
-    : { t: `${ramPct.toFixed(0)}% used`, tone: "quiet" as const };
 
   return (
     <Page
@@ -98,8 +93,7 @@ export const MonitorView: React.FC = () => {
         <Tile
           label="Memory"
           value={live ? gb(ramUsed) : "—"}
-          note={live ? `${ramNote.t} · of ${gb(ramMax)}` : undefined}
-          noteTone={ramNote.tone}
+          note={live ? `${gb(ramMax)} set aside for the game` : undefined}
         />
         <Tile label="Processor" value={live ? `${cpu.toFixed(0)}%` : "—"} note={live ? "of your PC" : undefined} />
         <Tile
@@ -124,7 +118,7 @@ export const MonitorView: React.FC = () => {
           <LiveChart
             values={ramValues}
             times={times}
-            max={ramMax}
+            max={Math.max(ramMax, ...ramValues)}
             format={gb}
             colorClass="text-info"
             label="Memory"
