@@ -9,7 +9,10 @@ import {
   Globe,
   Home,
   Info,
+  Loader2,
+  Play,
   Settings,
+  Square,
   Users,
   X,
 } from "lucide-react";
@@ -21,7 +24,8 @@ import { ModsView } from "./components/mods/ModsView";
 import { WorldsView } from "./components/worlds/WorldsView";
 import { MonitorView } from "./components/monitor/MonitorView";
 import { SettingsView } from "./components/settings/SettingsView";
-import { StatusDot } from "./components/ui";
+import { Button, StatusDot } from "./components/ui";
+import { useStartWorld } from "./lib/useStartWorld";
 
 export type ActiveTab =
   | "dashboard"
@@ -35,9 +39,19 @@ export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<ActiveTab>("dashboard");
   const [copied, setCopied] = useState(false);
 
-  const { status, telemetry, toasts, dismissToast, initializeServerStore } =
-    useServerStore();
+  const {
+    status,
+    telemetry,
+    toasts,
+    worlds,
+    selectedWorldId,
+    dismissToast,
+    stopServer,
+    initializeServerStore,
+  } = useServerStore();
   const { network, initializeNetworkStore } = useNetworkStore();
+  const startWorld = useStartWorld();
+  const worldName = worlds?.find((w) => w.kind === "world" && w.id === selectedWorldId)?.name;
 
   useEffect(() => {
     initializeServerStore();
@@ -109,8 +123,44 @@ export const App: React.FC = () => {
           })}
         </nav>
 
+        {/* Start / stop the selected world from anywhere */}
+        <div className="mt-auto pb-3">
+          {isOnline || status === "stopping" ? (
+            <Button
+              variant="secondary"
+              onClick={stopServer}
+              disabled={status === "stopping"}
+              className="w-full"
+              icon={<Square className="w-4 h-4 fill-current" />}
+            >
+              {status === "stopping" ? "Saving…" : "Stop server"}
+            </Button>
+          ) : (
+            <Button
+              variant="primary"
+              onClick={startWorld}
+              disabled={isBusy}
+              className="w-full"
+              icon={
+                isBusy ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : (
+                  <Play className="w-5 h-5 fill-current" />
+                )
+              }
+            >
+              {isBusy ? "Starting…" : "Start server"}
+            </Button>
+          )}
+          {worldName && (
+            <div className="text-xs text-faint text-center mt-1.5 truncate" title={worldName}>
+              {worldName}
+            </div>
+          )}
+        </div>
+
         {/* Quiet status box */}
-        <div className="mt-auto rounded-2xl bg-raised/70 p-4">
+        <div className="rounded-2xl bg-raised/70 p-4">
           <div className="flex items-center gap-2 font-bold">
             <StatusDot tone={isOnline ? "on" : isBusy ? "busy" : "off"} />
             {isOnline ? "World is open" : isBusy ? "Getting ready…" : "World is closed"}

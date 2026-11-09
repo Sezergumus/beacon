@@ -17,6 +17,7 @@ import {
 import { useServerStore } from "../../stores/useServerStore";
 import { useNetworkStore } from "../../stores/useNetworkStore";
 import { ServerCore } from "../../lib/tauri";
+import { useStartWorld } from "../../lib/useStartWorld";
 import type { ActiveTab } from "../../App";
 import {
   Button,
@@ -55,7 +56,6 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
     jvmProgress,
     setSelectedCore,
     setSelectedVersion,
-    startServer,
     stopServer,
     sendCommand,
     executePlayerAction,
@@ -76,8 +76,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
   }, [versionList]);
   const worldName = worlds?.find((w) => w.kind === "world" && w.id === selectedWorldId)?.name;
 
-  const { network, isBusy: isNetBusy, startHostingRoom, joinFriendRoom, leaveSession } =
-    useNetworkStore();
+  const { isBusy: isNetBusy, startHostingRoom, joinFriendRoom, leaveSession } = useNetworkStore();
 
   const isRunning = status === "running";
   const isStopped = status === "stopped";
@@ -88,16 +87,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
   const ramMax = telemetry?.ram_allocated_mb ?? customRamMb;
   const players = telemetry?.online_players ?? [];
 
-  const handleStart = async () => {
-    await startServer();
-    if (network.role === "idle") {
-      try {
-        await startHostingRoom();
-      } catch {
-        // the room can also be opened by hand below
-      }
-    }
-  };
+  const handleStart = useStartWorld();
 
   const title = isRunning
     ? "Your world is open"
