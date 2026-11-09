@@ -20,9 +20,9 @@ import {
   EmptyState,
   Page,
   PlayerHead,
-  TextInput,
   Toggle,
 } from "../ui";
+import { NewWorldForm } from "./NewWorldForm";
 import { WorldDetailsModal } from "./WorldDetailsModal";
 
 const timeAgo = (ms: number) => {
@@ -63,13 +63,11 @@ export const WorldsView: React.FC = () => {
     selectedWorldId,
     selectWorld,
     refreshWorlds,
-    createWorld,
   } = useServerStore();
 
   const [confirmId, setConfirmId] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
-  const [newName, setNewName] = useState("");
   const [details, setDetails] = useState<{
     id: string;
     rename: boolean;
@@ -83,14 +81,6 @@ export const WorldsView: React.FC = () => {
   useEffect(() => {
     refreshWorlds();
   }, [refreshWorlds, latestSnapshotId, status]);
-
-  const addWorld = async () => {
-    if (!newName.trim()) return;
-    if (await createWorld(newName)) {
-      setNewName("");
-      setCreating(false);
-    }
-  };
 
   const remove = async (world: WorldEntry) => {
     setDeletingId(world.id);
@@ -149,32 +139,14 @@ export const WorldsView: React.FC = () => {
       )}
 
       {creating && (
-        <form
-          className="rounded-2xl bg-surface p-4 flex items-center gap-3"
-          onSubmit={(e) => {
-            e.preventDefault();
-            addWorld();
-          }}
-        >
-          <TextInput
-            value={newName}
-            onChange={(e) => setNewName(e.target.value)}
+        <div className="rounded-2xl bg-surface p-4">
+          <NewWorldForm
             placeholder="Name your new world, e.g. Survival with friends"
-            maxLength={40}
             autoFocus
-            aria-label="New world name"
+            onCancel={() => setCreating(false)}
+            onCreated={() => setCreating(false)}
           />
-          <Button type="submit" variant="primary" disabled={!newName.trim()}>
-            Create
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            onClick={() => setCreating(false)}
-          >
-            Cancel
-          </Button>
-        </form>
+        </div>
       )}
 
       <Card>

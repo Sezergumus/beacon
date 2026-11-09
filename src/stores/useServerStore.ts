@@ -6,6 +6,7 @@ import {
   JvmProgressEvent,
   ModpackProgressEvent,
   ModrinthSearchHit,
+  NewWorldOptions,
   OnlinePlayer,
   PlayerInventoryData,
   ServerCore,
@@ -76,7 +77,7 @@ interface ServerStoreState {
   /** Switch to another world: its own version, type, mods and settings load. */
   selectWorld: (id: string) => Promise<void>;
   /** Makes a world, selects it and returns its id (null if it failed). */
-  createWorld: (name: string) => Promise<string | null>;
+  createWorld: (name: string, options?: NewWorldOptions) => Promise<string | null>;
   renameWorld: (id: string, name: string) => Promise<boolean>;
   pushToast: (type: ToastNotice["type"], title: string, message: string) => void;
   dismissToast: (id: string) => void;
@@ -226,10 +227,10 @@ export const useServerStore = create<ServerStoreState>((set, get) => ({
     get().refreshWorlds();
   },
 
-  createWorld: async (name) => {
+  createWorld: async (name, options) => {
     const { selectedCore, selectedVersion } = get();
     try {
-      const meta = await tauriApi.createWorld(name, selectedCore, selectedVersion);
+      const meta = await tauriApi.createWorld(name, selectedCore, selectedVersion, options);
       set({ selectedWorldId: meta.id });
       await activateWorld(meta.id);
       await get().refreshWorlds();

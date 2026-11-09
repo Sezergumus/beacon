@@ -151,6 +151,7 @@ export const Toggle: React.FC<{
   label: string;
 }> = ({ checked, onChange, label }) => (
   <button
+    type="button"
     role="switch"
     aria-checked={checked}
     aria-label={label}
@@ -277,6 +278,7 @@ export const Disclosure: React.FC<{
   return (
     <div>
       <button
+        type="button"
         onClick={() => setOpen(!open)}
         className="flex items-center gap-1.5 text-sm font-bold text-soft hover:text-ink cursor-pointer"
         aria-expanded={open}

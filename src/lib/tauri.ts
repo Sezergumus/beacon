@@ -99,6 +99,13 @@ export interface PlayerInventoryData {
   last_updated_ms: number;
 }
 
+/** Chosen when a world is made; Minecraft only reads these when it first generates the world. */
+export interface NewWorldOptions {
+  /** Any text or number. Empty means a random seed. */
+  seed?: string;
+  hardcore?: boolean;
+}
+
 export interface ModrinthSearchHit {
   project_id: string;
   slug: string;
@@ -343,8 +350,12 @@ export const tauriApi = {
 
   listWorlds: () => invoke<WorldEntry[]>("list_worlds"),
 
-  createWorld: (name: string, core: ServerCore, mcVersion: string) =>
-    invoke<WorldMeta>("create_world", { name, core, mcVersion }),
+  createWorld: (
+    name: string,
+    core: ServerCore,
+    mcVersion: string,
+    options?: NewWorldOptions
+  ) => invoke<WorldMeta>("create_world", { name, core, mcVersion, options: options ?? null }),
 
   /** Make this world the one the Mods / Settings / Players pages work on (server must be stopped). */
   setActiveWorld: (id: string) => invoke<void>("set_active_world", { id }),

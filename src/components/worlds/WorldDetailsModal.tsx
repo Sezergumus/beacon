@@ -341,11 +341,15 @@ export const WorldDetailsModal: React.FC<{
                   onChange={(gamemode) => edit({ gamemode })}
                 />
               </Row>
-              <Row title="Difficulty">
+              <Row
+                title="Difficulty"
+                hint={details.hardcore ? "Hardcore worlds always play on hard." : undefined}
+              >
                 <Segmented
-                  value={draft.difficulty}
+                  value={details.hardcore ? "hard" : draft.difficulty}
                   options={DIFFICULTIES}
                   onChange={(difficulty) => edit({ difficulty })}
+                  disabled={details.hardcore}
                 />
               </Row>
               <Row title="Keep inventory" hint="Players keep their items when they die.">

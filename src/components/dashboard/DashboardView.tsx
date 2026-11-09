@@ -18,6 +18,7 @@ import { useServerStore } from "../../stores/useServerStore";
 import { useNetworkStore } from "../../stores/useNetworkStore";
 import { ServerCore } from "../../lib/tauri";
 import { useStartWorld } from "../../lib/useStartWorld";
+import { NewWorldForm } from "../worlds/NewWorldForm";
 import type { ActiveTab } from "../../App";
 import {
   Button,
@@ -307,56 +308,23 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
 const NEW_WORLD = "__new__";
 
 const WorldPicker: React.FC = () => {
-  const { worlds, selectedWorldId, selectWorld, createWorld } = useServerStore();
+  const { worlds, selectedWorldId, selectWorld } = useServerStore();
   const live = (worlds ?? []).filter((w) => w.kind === "world");
   const [creating, setCreating] = useState(false);
-  const [name, setName] = useState("");
-  const [saving, setSaving] = useState(false);
 
   if (worlds === null) return null;
 
   // With no world yet the only sensible thing to do is make one.
-  const showForm = creating || live.length === 0;
-
-  const submit = async () => {
-    if (!name.trim() || saving) return;
-    setSaving(true);
-    const id = await createWorld(name);
-    setSaving(false);
-    if (id) {
-      setName("");
-      setCreating(false);
-    }
-  };
-
-  if (showForm) {
+  if (creating || live.length === 0) {
     return (
-      <form
-        className="flex items-center gap-3 basis-full"
-        onSubmit={(e) => {
-          e.preventDefault();
-          submit();
-        }}
-      >
-        <span className="font-bold text-soft">World</span>
-        <TextInput
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder={live.length === 0 ? "Name your first world, e.g. Survival" : "Name your new world"}
-          maxLength={40}
-          autoFocus={creating}
-          aria-label="New world name"
-          className="max-w-xs"
-        />
-        <Button type="submit" variant="primary" disabled={saving || !name.trim()}>
-          Create
-        </Button>
-        {live.length > 0 && (
-          <Button type="button" variant="ghost" onClick={() => setCreating(false)}>
-            Cancel
-          </Button>
-        )}
-      </form>
+      <NewWorldForm
+        className="basis-full"
+        label="World"
+        placeholder={live.length === 0 ? "Name your first world, e.g. Survival" : "Name your new world"}
+        autoFocus={creating}
+        onCancel={live.length > 0 ? () => setCreating(false) : undefined}
+        onCreated={() => setCreating(false)}
+      />
     );
   }
 
