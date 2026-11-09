@@ -171,6 +171,40 @@ async fn save_world_properties(
     Ok(saved)
 }
 
+/// The starting settings new worlds are made with (the Settings page).
+#[tauri::command]
+async fn get_default_properties(state: State<'_, AppState>) -> AppResult<ServerProperties> {
+    Ok(crate::engine::properties::load_defaults(&state.app_data_dir))
+}
+
+#[tauri::command]
+async fn save_default_properties(
+    state: State<'_, AppState>,
+    props: ServerProperties,
+) -> AppResult<ServerProperties> {
+    crate::engine::properties::save_defaults(&state.app_data_dir, &props)
+}
+
+/// The server icon of a world, or (without an id) the one new worlds start with.
+#[tauri::command]
+async fn get_server_icon(state: State<'_, AppState>, id: Option<String>) -> AppResult<Option<String>> {
+    worlds::read_icon(&state.app_data_dir, id.as_deref())
+}
+
+#[tauri::command]
+async fn set_server_icon(
+    state: State<'_, AppState>,
+    id: Option<String>,
+    png_base64: String,
+) -> AppResult<()> {
+    worlds::write_icon(&state.app_data_dir, id.as_deref(), &png_base64)
+}
+
+#[tauri::command]
+async fn clear_server_icon(state: State<'_, AppState>, id: Option<String>) -> AppResult<()> {
+    worlds::clear_icon(&state.app_data_dir, id.as_deref())
+}
+
 #[tauri::command]
 async fn run_player_action(
     state: State<'_, AppState>,
@@ -495,6 +529,11 @@ pub fn run() {
             save_server_properties,
             get_world_details,
             save_world_properties,
+            get_default_properties,
+            save_default_properties,
+            get_server_icon,
+            set_server_icon,
+            clear_server_icon,
             run_player_action,
             inspect_player_inventory,
             search_modrinth_catalog,

@@ -310,7 +310,14 @@ pub fn create_world_with(
     let inst = instance_dir(app_data_dir, &id);
     fs::create_dir_all(inst.join("mods"))?;
     fs::create_dir_all(inst.join("plugins"))?;
-    let mut props = ServerProperties::load(&inst)?;
+    // New worlds start from the settings and icon chosen on the Settings page.
+    let mut props = crate::engine::properties::load_defaults(app_data_dir);
+    props.save(&inst)?;
+    if let Ok(default_icon) = icon_path(app_data_dir, None) {
+        if default_icon.exists() {
+            let _ = fs::copy(default_icon, inst.join(ICON_FILE));
+        }
+    }
     set_level_name(&inst, LEGACY_WORLD_ID)?;
     if let Some(seed) = &seed {
         set_property(&inst, "level-seed", seed)?;
@@ -711,19 +718,89 @@ pub fn save_world_properties(
     if !is_safe_id(id) || load_registry(app_data_dir).iter().all(|w| w.id != id) {
         return Err(AppError::Custom("That world no longer exists.".to_string()));
     }
-    if !["survival", "creative", "adventure", "spectator"].contains(&props.gamemode.as_str()) {
-        return Err(AppError::Custom("That isn't a valid game mode.".to_string()));
-    }
-    if !["peaceful", "easy", "normal", "hard"].contains(&props.difficulty.as_str()) {
-        return Err(AppError::Custom("That isn't a valid difficulty.".to_string()));
-    }
-    // A newline in the MOTD would start a new line (a new setting) in the file.
-    if props.motd.chars().any(|c| c.is_control()) {
-        return Err(AppError::Custom("The welcome message can't contain line breaks.".to_string()));
-    }
+    props.validate()?;
     let inst = instance_dir(app_data_dir, id);
     props.save(&inst)?;
     ServerProperties::load(&inst)
+}
+
+/* ---------- Server icon ---------- */
+
+/// Minecraft shows `server-icon.png` (exactly 64x64) in the multiplayer list.
+const ICON_FILE: &str = "server-icon.png";
+const ICON_SIZE: u32 = 64;
+const MAX_ICON_BYTES: usize = 64 * 1024;
+
+/// The icon file of one world, or (with no id) the one new worlds start with.
+fn icon_path(app_data_dir: &Path, id: Option<&str>) -> AppResult<PathBuf> {
+    match id {
+        None => Ok(app_data_dir.join("default-server-icon.png")),
+        Some(id) => {
+            if !is_safe_id(id) || load_registry(app_data_dir).iter().all(|w| w.id != id) {
+                return Err(AppError::Custom("That world no longer exists.".to_string()));
+            }
+            Ok(instance_dir(app_data_dir, id).join(ICON_FILE))
+        }
+    }
+}
+
+/// The icon as a `data:` URL the window can show, if one is set.
+pub fn read_icon(app_data_dir: &Path, id: Option<&str>) -> AppResult<Option<String>> {
+    use base64::Engine;
+    let path = icon_path(app_data_dir, id)?;
+    match fs::read(&path) {
+        Ok(bytes) => Ok(Some(format!(
+            "data:image/png;base64,{}",
+            base64::engine::general_purpose::STANDARD.encode(bytes)
+        ))),
+        Err(_) => Ok(None),
+    }
+}
+
+/// Save a PNG sent from the window. It must already be 64x64: the window crops and
+/// scales the picture the player chose, so anything else is refused.
+pub fn write_icon(app_data_dir: &Path, id: Option<&str>, png_base64: &str) -> AppResult<()> {
+    use base64::Engine;
+    let path = icon_path(app_data_dir, id)?;
+    let data = png_base64
+        .split_once("base64,")
+        .map(|(_, rest)| rest)
+        .unwrap_or(png_base64);
+    let bytes = base64::engine::general_purpose::STANDARD
+        .decode(data.trim())
+        .map_err(|_| AppError::Custom("That picture couldn't be read.".to_string()))?;
+    if bytes.len() > MAX_ICON_BYTES {
+        return Err(AppError::Custom("That picture is too big.".to_string()));
+    }
+    // PNG signature, then the IHDR chunk with the width and height.
+    let is_png = bytes.len() >= 24
+        && bytes[..8] == [0x89, b'P', b'N', b'G', 0x0D, 0x0A, 0x1A, 0x0A]
+        && &bytes[12..16] == b"IHDR";
+    if !is_png {
+        return Err(AppError::Custom("The icon has to be a PNG picture.".to_string()));
+    }
+    let width = u32::from_be_bytes([bytes[16], bytes[17], bytes[18], bytes[19]]);
+    let height = u32::from_be_bytes([bytes[20], bytes[21], bytes[22], bytes[23]]);
+    if width != ICON_SIZE || height != ICON_SIZE {
+        return Err(AppError::Custom(format!(
+            "The icon has to be {0}x{0} pixels.",
+            ICON_SIZE
+        )));
+    }
+    if let Some(parent) = path.parent() {
+        fs::create_dir_all(parent)?;
+    }
+    fs::write(path, bytes)?;
+    Ok(())
+}
+
+pub fn clear_icon(app_data_dir: &Path, id: Option<&str>) -> AppResult<()> {
+    let path = icon_path(app_data_dir, id)?;
+    match fs::remove_file(path) {
+        Ok(()) => Ok(()),
+        Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(()),
+        Err(e) => Err(e.into()),
+    }
 }
 
 /* ---------- One-time move from the old shared server folder ---------- */
@@ -917,6 +994,49 @@ mod tests {
         let _ = fs::remove_dir_all(&dir);
         fs::create_dir_all(&dir).unwrap();
         dir
+    }
+
+    /// A valid 64x64 PNG header is all the validation looks at.
+    fn png_header(w: u32, h: u32) -> String {
+        use base64::Engine;
+        let mut b = vec![0x89, b'P', b'N', b'G', 0x0D, 0x0A, 0x1A, 0x0A, 0, 0, 0, 13];
+        b.extend_from_slice(b"IHDR");
+        b.extend_from_slice(&w.to_be_bytes());
+        b.extend_from_slice(&h.to_be_bytes());
+        base64::engine::general_purpose::STANDARD.encode(b)
+    }
+
+    #[test]
+    fn icons_are_checked_and_stored_per_world() {
+        let app = temp("icons");
+        let a = create_world(&app, "A", ServerCore::Paper, "1.21.1").unwrap();
+        assert!(read_icon(&app, Some(&a.id)).unwrap().is_none());
+        assert!(write_icon(&app, Some(&a.id), &png_header(32, 32)).is_err());
+        assert!(write_icon(&app, Some(&a.id), "bm90IGEgcG5n").is_err());
+        assert!(write_icon(&app, Some("../evil"), &png_header(64, 64)).is_err());
+        write_icon(&app, Some(&a.id), &png_header(64, 64)).unwrap();
+        assert!(instance_dir(&app, &a.id).join(ICON_FILE).exists());
+        assert!(read_icon(&app, Some(&a.id)).unwrap().unwrap().starts_with("data:image/png;base64,"));
+        clear_icon(&app, Some(&a.id)).unwrap();
+        assert!(read_icon(&app, Some(&a.id)).unwrap().is_none());
+    }
+
+    #[test]
+    fn new_worlds_start_from_the_defaults() {
+        let app = temp("defaults_on_create");
+        let mut defaults = ServerProperties::default();
+        defaults.difficulty = "hard".to_string();
+        defaults.motd = "Welcome
+friends".to_string();
+        crate::engine::properties::save_defaults(&app, &defaults).unwrap();
+        write_icon(&app, None, &png_header(64, 64)).unwrap();
+
+        let w = create_world(&app, "Fresh", ServerCore::Paper, "1.21.1").unwrap();
+        let props = ServerProperties::load(&instance_dir(&app, &w.id)).unwrap();
+        assert_eq!(props.difficulty, "hard");
+        assert_eq!(props.motd, "Welcome
+friends");
+        assert!(instance_dir(&app, &w.id).join(ICON_FILE).exists());
     }
 
     #[test]
@@ -1184,8 +1304,15 @@ mod tests {
         bad.gamemode = "godmode".to_string();
         assert!(save_world_properties(&app, &a.id, &bad).is_err());
         let mut bad = props.clone();
-        bad.motd = "hi\nlevel-name=evil".to_string();
+        bad.motd = "hi\rlevel-name=evil".to_string();
         assert!(save_world_properties(&app, &a.id, &bad).is_err());
+        // A line break is a real second MOTD line now; it is escaped, so it can't
+        // start a new setting in the file.
+        let mut two_lines = props.clone();
+        two_lines.motd = "hi\nlevel-name=evil".to_string();
+        let saved = save_world_properties(&app, &a.id, &two_lines).unwrap();
+        assert_eq!(saved.motd, "hi\nlevel-name=evil");
+        assert_eq!(level_name(&instance_dir(&app, &a.id)), LEGACY_WORLD_ID);
         assert!(save_world_properties(&app, "../x", &props).is_err());
         let _ = fs::remove_dir_all(&app);
     }
