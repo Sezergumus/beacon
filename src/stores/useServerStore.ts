@@ -69,6 +69,8 @@ interface ServerStoreState {
   searchResults: ModrinthSearchHit[];
   isSearchingMods: boolean;
   installingSlug: string | null;
+  /** Modrinth project whose files are being deleted right now. */
+  removingProjectId: string | null;
   toasts: ToastNotice[];
   /** Every world and backup, as listed by the backend (null until first load). */
   worlds: WorldEntry[] | null;
@@ -205,6 +207,7 @@ export const useServerStore = create<ServerStoreState>((set, get) => ({
   searchResults: [],
   isSearchingMods: false,
   installingSlug: null,
+  removingProjectId: null,
   toasts: [],
   worlds: null,
   selectedWorldId: null,
@@ -620,7 +623,13 @@ export const useServerStore = create<ServerStoreState>((set, get) => ({
     const files = get().installedContent.filter(
       (i) => projectByHash.get(i.sha512.toLowerCase()) === projectId,
     );
-    for (const f of files) await get().removeContentItem(f.filename, f.kind);
+    if (get().removingProjectId) return;
+    set({ removingProjectId: projectId });
+    try {
+      for (const f of files) await get().removeContentItem(f.filename, f.kind);
+    } finally {
+      set({ removingProjectId: null });
+    }
   },
 
   removeContentItem: async (filename, kind) => {

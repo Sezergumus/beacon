@@ -33,6 +33,7 @@ export const ModsView: React.FC = () => {
     refreshInstalledContent,
     removeContentItem,
     removeProject,
+    removingProjectId,
   } = useServerStore();
 
   const single = selectedCore === "paper" ? "plugin" : "mod";
@@ -110,7 +111,8 @@ export const ModsView: React.FC = () => {
         )}
         {searchResults.map((hit) => {
           const installing = installingSlug === hit.slug;
-          const installed = kind === "single" && installedProjectIds.includes(hit.project_id);
+          const removing = removingProjectId === hit.project_id;
+          const installed = kind === "single" && (removing || installedProjectIds.includes(hit.project_id));
           return (
             <div
               key={hit.project_id}
@@ -145,7 +147,7 @@ export const ModsView: React.FC = () => {
                 <p className="text-sm text-soft line-clamp-2 mt-0.5">{hit.description}</p>
               </div>
               {installed ? (
-                <InstalledBadge onUninstall={() => removeProject(hit.project_id)} />
+                <InstalledBadge onUninstall={() => removeProject(hit.project_id)} removing={removing} />
               ) : (
                 <Button
                   onClick={() => installModrinthItem(hit)}

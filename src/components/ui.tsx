@@ -1,5 +1,5 @@
 import React from "react";
-import { Check, ChevronDown, Trash2, X, type LucideIcon } from "lucide-react";
+import { Check, ChevronDown, Loader2, Trash2, X, type LucideIcon } from "lucide-react";
 
 const cx = (...parts: (string | false | null | undefined)[]) =>
   parts.filter(Boolean).join(" ");
@@ -146,7 +146,17 @@ export const TextInput: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = 
 );
 
 /** Stands where the "Add" button was once the mod / plugin is in the world. */
-export const InstalledBadge: React.FC<{ onUninstall?: () => void }> = ({ onUninstall }) => {
+export const InstalledBadge: React.FC<{ onUninstall?: () => void; removing?: boolean }> = ({
+  onUninstall,
+  removing,
+}) => {
+  if (removing) {
+    return (
+      <span className="inline-flex items-center justify-center gap-2 h-11 px-5 rounded-xl bg-danger/15 text-danger font-bold text-[15px] whitespace-nowrap select-none">
+        <Loader2 className="w-4 h-4 animate-spin" /> Removing…
+      </span>
+    );
+  }
   if (!onUninstall) {
     return (
       <span className="inline-flex items-center justify-center gap-2 h-11 px-5 rounded-xl bg-brand/15 text-brand font-bold text-[15px] whitespace-nowrap select-none">

@@ -142,7 +142,7 @@ const LinkButton: React.FC<{ url?: string | null; icon: React.ReactNode; childre
   ) : null;
 
 export const ModDetailsModal: React.FC<{ hit: ModrinthSearchHit; onClose: () => void }> = ({ hit, onClose }) => {
-  const { selectedCore, selectedVersion, installingSlug, installedProjectIds, installModrinthItem, removeProject, pushToast } =
+  const { selectedCore, selectedVersion, installingSlug, installedProjectIds, installModrinthItem, removeProject, removingProjectId, pushToast } =
     useServerStore();
   const [details, setDetails] = useState<ModrinthProjectDetails | null>(null);
   const [failed, setFailed] = useState(false);
@@ -170,7 +170,8 @@ export const ModDetailsModal: React.FC<{ hit: ModrinthSearchHit; onClose: () => 
   const type = details?.project_type ?? hit.project_type;
   const installing = installingSlug === hit.slug;
   // Modpacks are unpacked into many files, so there is no single file to recognise.
-  const installed = hit.project_type !== "modpack" && installedProjectIds.includes(hit.project_id);
+  const removing = removingProjectId === hit.project_id;
+  const installed = hit.project_type !== "modpack" && (removing || installedProjectIds.includes(hit.project_id));
   const downloads = details?.downloads ?? hit.downloads;
   const categories = details?.categories ?? hit.categories;
   const icon = details?.icon_url ?? hit.icon_url;
@@ -218,7 +219,7 @@ export const ModDetailsModal: React.FC<{ hit: ModrinthSearchHit; onClose: () => 
             </div>
           </div>
           {installed ? (
-            <InstalledBadge onUninstall={() => removeProject(hit.project_id)} />
+            <InstalledBadge onUninstall={() => removeProject(hit.project_id)} removing={removing} />
           ) : (
             <Button
               variant="primary"
