@@ -1,5 +1,5 @@
 import React from "react";
-import { ChevronDown, X, type LucideIcon } from "lucide-react";
+import { Check, ChevronDown, X, type LucideIcon } from "lucide-react";
 
 const cx = (...parts: (string | false | null | undefined)[]) =>
   parts.filter(Boolean).join(" ");
@@ -143,6 +143,13 @@ export const TextInput: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = 
       className
     )}
   />
+);
+
+/** Stands where the "Add" button was once the mod / plugin is in the world. */
+export const InstalledBadge: React.FC = () => (
+  <span className="inline-flex items-center justify-center gap-2 h-11 px-5 rounded-xl bg-brand/15 text-brand font-bold text-[15px] whitespace-nowrap select-none">
+    <Check className="w-4 h-4" /> Installed
+  </span>
 );
 
 export const Toggle: React.FC<{

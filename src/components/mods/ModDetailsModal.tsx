@@ -23,7 +23,7 @@ import {
 } from "../../lib/tauri";
 import { formatCount } from "../../lib/format";
 import { useServerStore } from "../../stores/useServerStore";
-import { Button, Disclosure, Modal } from "../ui";
+import { Button, Disclosure, InstalledBadge, Modal } from "../ui";
 import { DiscordIcon } from "../icons";
 import { Markdown } from "./Markdown";
 
@@ -142,7 +142,8 @@ const LinkButton: React.FC<{ url?: string | null; icon: React.ReactNode; childre
   ) : null;
 
 export const ModDetailsModal: React.FC<{ hit: ModrinthSearchHit; onClose: () => void }> = ({ hit, onClose }) => {
-  const { selectedCore, selectedVersion, installingSlug, installModrinthItem, pushToast } = useServerStore();
+  const { selectedCore, selectedVersion, installingSlug, installedProjectIds, installModrinthItem, pushToast } =
+    useServerStore();
   const [details, setDetails] = useState<ModrinthProjectDetails | null>(null);
   const [failed, setFailed] = useState(false);
   const [zoomed, setZoomed] = useState<{ src: string; caption?: string | null } | null>(null);
@@ -168,6 +169,8 @@ export const ModDetailsModal: React.FC<{ hit: ModrinthSearchHit; onClose: () => 
 
   const type = details?.project_type ?? hit.project_type;
   const installing = installingSlug === hit.slug;
+  // Modpacks are unpacked into many files, so there is no single file to recognise.
+  const installed = hit.project_type !== "modpack" && installedProjectIds.includes(hit.project_id);
   const downloads = details?.downloads ?? hit.downloads;
   const categories = details?.categories ?? hit.categories;
   const icon = details?.icon_url ?? hit.icon_url;
@@ -214,14 +217,18 @@ export const ModDetailsModal: React.FC<{ hit: ModrinthSearchHit; onClose: () => 
               ))}
             </div>
           </div>
-          <Button
-            variant="primary"
-            onClick={() => installModrinthItem(hit)}
-            disabled={installing || installingSlug !== null}
-            icon={installing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-          >
-            {installing ? "Adding…" : "Add"}
-          </Button>
+          {installed ? (
+            <InstalledBadge />
+          ) : (
+            <Button
+              variant="primary"
+              onClick={() => installModrinthItem(hit)}
+              disabled={installing || installingSlug !== null}
+              icon={installing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+            >
+              {installing ? "Adding…" : "Add"}
+            </Button>
+          )}
         </div>
 
         {!details ? (

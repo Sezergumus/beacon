@@ -381,6 +381,10 @@ export const tauriApi = {
       loader: loader ?? null,
     }),
 
+  /** SHA-512 of installed files -> Modrinth project id. Unknown files are left out. */
+  identifyInstalledContent: (hashes: string[]) =>
+    invoke<Record<string, string>>("identify_installed_content", { hashes }),
+
   getModrinthProject: (projectId: string) =>
     invoke<ModrinthProjectDetails>("get_modrinth_project_details", { projectId }),
 

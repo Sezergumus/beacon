@@ -3,7 +3,7 @@ import { Check, Download, Loader2, Puzzle, Search, Trash2 } from "lucide-react";
 import { useServerStore } from "../../stores/useServerStore";
 import type { ModrinthSearchHit } from "../../lib/tauri";
 import { formatCount } from "../../lib/format";
-import { Button, Card, Disclosure, EmptyState, Page, ProgressBar, Segmented, TextInput } from "../ui";
+import { Button, Card, Disclosure, EmptyState, InstalledBadge, Page, ProgressBar, Segmented, TextInput } from "../ui";
 
 // The details window pulls in the Markdown renderer, so it loads only when first opened.
 const ModDetailsModal = React.lazy(() =>
@@ -26,6 +26,7 @@ export const ModsView: React.FC = () => {
     installingSlug,
     modpackProgress,
     installedContent,
+    installedProjectIds,
     searchModrinth,
     installModrinthItem,
     installLocalMrpack,
@@ -108,6 +109,7 @@ export const ModsView: React.FC = () => {
         )}
         {searchResults.map((hit) => {
           const installing = installingSlug === hit.slug;
+          const installed = kind === "single" && installedProjectIds.includes(hit.project_id);
           return (
             <div
               key={hit.project_id}
@@ -141,13 +143,17 @@ export const ModsView: React.FC = () => {
                 </div>
                 <p className="text-sm text-soft line-clamp-2 mt-0.5">{hit.description}</p>
               </div>
-              <Button
-                onClick={() => installModrinthItem(hit)}
-                disabled={installing || installingSlug !== null}
-                icon={installing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-              >
-                {installing ? "Adding…" : "Add"}
-              </Button>
+              {installed ? (
+                <InstalledBadge />
+              ) : (
+                <Button
+                  onClick={() => installModrinthItem(hit)}
+                  disabled={installing || installingSlug !== null}
+                  icon={installing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                >
+                  {installing ? "Adding…" : "Add"}
+                </Button>
+              )}
             </div>
           );
         })}

@@ -4,7 +4,7 @@ pub mod error;
 pub mod network;
 
 use crate::content::modrinth::{
-    get_modrinth_project, install_modrinth_project, install_mrpack_archive,
+    get_modrinth_project, identify_content_hashes, install_modrinth_project, install_mrpack_archive,
     list_installed_content, remove_installed_content, search_modrinth, InstalledContentItem,
     ModrinthProjectDetails, ModrinthSearchHit,
 };
@@ -216,6 +216,14 @@ async fn search_modrinth_catalog(
 #[tauri::command]
 async fn get_modrinth_project_details(project_id: String) -> AppResult<ModrinthProjectDetails> {
     get_modrinth_project(&project_id).await
+}
+
+/// Maps file hashes (SHA-512) to Modrinth project ids, to tell which results are already installed.
+#[tauri::command]
+async fn identify_installed_content(
+    hashes: Vec<String>,
+) -> AppResult<std::collections::HashMap<String, String>> {
+    identify_content_hashes(hashes).await
 }
 
 #[tauri::command]
@@ -491,6 +499,7 @@ pub fn run() {
             inspect_player_inventory,
             search_modrinth_catalog,
             get_modrinth_project_details,
+            identify_installed_content,
             install_modrinth_item,
             install_local_mrpack,
             get_installed_content,

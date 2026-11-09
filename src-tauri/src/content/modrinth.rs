@@ -320,6 +320,44 @@ pub async fn get_modrinth_project(project_id_or_slug: &str) -> AppResult<Modrint
     })
 }
 
+const MAX_IDENTIFY_HASHES: usize = 500;
+
+/// Which Modrinth project does each file (by SHA-512) belong to? Files Modrinth doesn't
+/// know (hand-copied jars, other sites) are simply missing from the result.
+pub async fn identify_content_hashes(hashes: Vec<String>) -> AppResult<HashMap<String, String>> {
+    let hashes: Vec<String> = hashes
+        .into_iter()
+        .filter(|h| h.len() == 128 && h.chars().all(|c| c.is_ascii_hexdigit()))
+        .take(MAX_IDENTIFY_HASHES)
+        .collect();
+    if hashes.is_empty() {
+        return Ok(HashMap::new());
+    }
+
+    let client = reqwest::Client::builder()
+        .user_agent("AetherMC/0.1.0 (https://github.com/aethermc)")
+        .build()?;
+    let resp: serde_json::Value = client
+        .post("https://api.modrinth.com/v2/version_files")
+        .json(&serde_json::json!({ "hashes": hashes, "algorithm": "sha512" }))
+        .send()
+        .await?
+        .error_for_status()?
+        .json()
+        .await?;
+
+    Ok(resp
+        .as_object()
+        .map(|o| {
+            o.iter()
+                .filter_map(|(hash, version)| {
+                    Some((hash.to_lowercase(), version["project_id"].as_str()?.to_string()))
+                })
+                .collect()
+        })
+        .unwrap_or_default())
+}
+
 /// Install a Modrinth project (mod, plugin, or `.mrpack` modpack) with SHA-512 verification.
 pub async fn install_modrinth_project(
     server_dir: &Path,

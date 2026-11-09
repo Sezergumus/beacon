@@ -64,6 +64,8 @@ interface ServerStoreState {
   modpackProgress: ModpackProgressEvent | null;
   activeInventory: PlayerInventoryData | null;
   installedContent: InstalledContentItem[];
+  /** Modrinth projects that are installed in the selected world (recognised by file hash). */
+  installedProjectIds: string[];
   searchResults: ModrinthSearchHit[];
   isSearchingMods: boolean;
   installingSlug: string | null;
@@ -121,6 +123,15 @@ const FALLBACK_VERSIONS: Record<ServerCore, string[]> = {
   neoforge: ["1.21.4", "1.21.1", "1.20.4"],
 };
 
+/** File hash (SHA-512) -> Modrinth project it belongs to, or null if Modrinth doesn't know the file. */
+const projectByHash = new Map<string, string | null>();
+
+const projectIdsOf = (items: InstalledContentItem[]): string[] => [
+  ...new Set(
+    items.map((i) => projectByHash.get(i.sha512.toLowerCase())).filter((id): id is string => !!id),
+  ),
+];
+
 /** If the chosen version isn't offered for this server type, move to a sensible one. */
 const keepVersionValid = (core: ServerCore) => {
   const { versions, selectedVersion, selectedCore, pushToast } = useServerStore.getState();
@@ -147,11 +158,9 @@ const activateWorld = async (id: string) => {
   const { pushToast } = useServerStore.getState();
   try {
     await tauriApi.setActiveWorld(id);
-    const [properties, installedContent] = await Promise.all([
-      tauriApi.getServerProperties(),
-      tauriApi.getInstalledContent(),
-    ]);
-    useServerStore.setState({ properties, installedContent });
+    const properties = await tauriApi.getServerProperties();
+    useServerStore.setState({ properties });
+    await useServerStore.getState().refreshInstalledContent();
   } catch (err) {
     pushToast("error", "Couldn't switch worlds", formatAppError(err));
   }
@@ -187,6 +196,7 @@ export const useServerStore = create<ServerStoreState>((set, get) => ({
   modpackProgress: null,
   activeInventory: null,
   installedContent: [],
+  installedProjectIds: [],
   searchResults: [],
   isSearchingMods: false,
   installingSlug: null,
@@ -267,12 +277,11 @@ export const useServerStore = create<ServerStoreState>((set, get) => ({
 
   initializeServerStore: async () => {
     try {
-      const [hw, props, telemetry, logs, content] = await Promise.all([
+      const [hw, props, telemetry, logs] = await Promise.all([
         tauriApi.getHardwareProfile(),
         tauriApi.getServerProperties(),
         tauriApi.getServerTelemetry(),
         tauriApi.getServerLogs(),
-        tauriApi.getInstalledContent(),
       ]);
 
       tauriApi.setAutosaveInterval(get().autosaveMins).catch(() => {});
@@ -283,12 +292,12 @@ export const useServerStore = create<ServerStoreState>((set, get) => ({
         telemetry,
         status: telemetry.status,
         logs,
-        installedContent: content,
       });
     } catch (err) {
       get().pushToast("error", "Couldn't load everything", formatAppError(err));
     }
 
+    get().refreshInstalledContent();
     get().refreshWorlds();
     get().loadVersions(get().selectedCore);
 
@@ -580,9 +589,21 @@ export const useServerStore = create<ServerStoreState>((set, get) => ({
   refreshInstalledContent: async () => {
     try {
       const installedContent = await tauriApi.getInstalledContent();
-      set({ installedContent });
+      set({ installedContent, installedProjectIds: projectIdsOf(installedContent) });
+
+      // Ask Modrinth which projects the files belong to (only for files not seen before).
+      const unknown = [
+        ...new Set(
+          installedContent.map((i) => i.sha512.toLowerCase()).filter((h) => h && !projectByHash.has(h)),
+        ),
+      ];
+      if (unknown.length === 0) return;
+      const found = await tauriApi.identifyInstalledContent(unknown);
+      for (const h of unknown) projectByHash.set(h, found[h] ?? null);
+      // The list may have changed while waiting, so work from the current one.
+      set((s) => ({ installedProjectIds: projectIdsOf(s.installedContent) }));
     } catch {
-      // ignore
+      // Offline or Modrinth is down: the list still shows, only the "Installed" marks lag behind.
     }
   },
 
