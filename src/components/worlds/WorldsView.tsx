@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import {
   Archive,
+  FolderOpen,
   ArrowRightLeft,
   Globe,
   Handshake,
@@ -108,6 +109,17 @@ export const WorldsView: React.FC = () => {
       subtitle="Your worlds and their saved copies. The world you're playing is backed up every 10 minutes."
       action={
         <div className="flex items-center gap-2">
+          <Button
+            onClick={() =>
+              tauriApi
+                .openDataFolder()
+                .catch((err) => pushToast("error", "Couldn't open the folder", formatAppError(err)))
+            }
+            icon={<FolderOpen className="w-4 h-4" />}
+            title="Where worlds, settings and server icons are saved"
+          >
+            Open folder
+          </Button>
           <Button
             onClick={() => setCreating((v) => !v)}
             icon={<Plus className="w-4 h-4" />}

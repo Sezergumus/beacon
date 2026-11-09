@@ -449,7 +449,11 @@ export const tauriApi = {
   setServerIcon: (id: string | null, pngBase64: string) =>
     invoke<void>("set_server_icon", { id, pngBase64 }),
 
+  /** Back to the default icon (the app's own, or the one chosen in Settings). */
   clearServerIcon: (id: string | null) => invoke<void>("clear_server_icon", { id }),
+
+  /** Show Beacon's data folder in the file explorer; returns its path. */
+  openDataFolder: () => invoke<string>("open_data_folder"),
 
   startP2pHost: (customRoomCode?: string) =>
     invoke<NetworkStateSnapshot>("start_p2p_host", {

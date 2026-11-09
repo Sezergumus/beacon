@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { ImagePlus, Loader2, Trash2 } from "lucide-react";
+import { ImagePlus, Loader2, RotateCcw } from "lucide-react";
 import { formatAppError, tauriApi } from "../lib/tauri";
 import { useServerStore } from "../stores/useServerStore";
 import {
@@ -233,13 +233,11 @@ const IconPicker: React.FC<{
         disabled={busy}
         icon={busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImagePlus className="w-4 h-4" />}
       >
-        {icon ? "Change picture" : "Choose picture"}
+        Choose picture
       </Button>
-      {icon && (
-        <Button size="sm" variant="ghost" onClick={onRemove} disabled={busy} icon={<Trash2 className="w-4 h-4" />}>
-          Remove
-        </Button>
-      )}
+      <Button size="sm" variant="ghost" onClick={onRemove} disabled={busy} icon={<RotateCcw className="w-4 h-4" />}>
+        Use default
+      </Button>
     </div>
   );
 };
@@ -297,13 +295,14 @@ export const ServerAppearance: React.FC<{
       <div>
         <div className="font-bold">Icon</div>
         <div className="text-sm text-soft mt-0.5 mb-2">
-          Shown next to the world in Minecraft's server list. Pictures are cropped to a square.
+          Shown next to the world in Minecraft's server list. Beacon's own icon is used until you choose
+          one. Pictures are cropped to a square.
         </div>
         <IconPicker
           icon={icon}
           busy={busy}
           onPick={(png) => run(() => tauriApi.setServerIcon(worldId, png), "Icon saved")}
-          onRemove={() => run(() => tauriApi.clearServerIcon(worldId), "Icon removed")}
+          onRemove={() => run(() => tauriApi.clearServerIcon(worldId), "Default icon restored")}
         />
       </div>
       <div>
