@@ -189,7 +189,7 @@ export const App: React.FC = () => {
         {activeTab === "mods" && <ModsView />}
         {activeTab === "monitor" && <MonitorView />}
         {activeTab === "worlds" && <WorldsView />}
-        {activeTab === "settings" && <SettingsView />}
+        {activeTab === "settings" && <SettingsView onNavigate={setActiveTab} />}
       </main>
 
       {/* Toasts */}

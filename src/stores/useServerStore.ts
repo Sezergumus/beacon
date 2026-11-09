@@ -98,7 +98,6 @@ interface ServerStoreState {
   stopServer: () => Promise<void>;
   sendCommand: (cmd: string) => Promise<void>;
   clearLogs: () => void;
-  updateProperties: (next: ServerProperties) => Promise<void>;
   executePlayerAction: (player: string, action: string, payload?: string) => Promise<void>;
   openPlayerInventory: (player: OnlinePlayer) => Promise<void>;
   closePlayerInventory: () => void;
@@ -443,21 +442,6 @@ export const useServerStore = create<ServerStoreState>((set, get) => ({
   },
 
   clearLogs: () => set({ logs: [] }),
-
-  updateProperties: async (next) => {
-    set({ properties: next });
-    try {
-      const saved = await tauriApi.saveServerProperties(next);
-      set({ properties: saved });
-      get().pushToast(
-        "success",
-        "Saved",
-        "Your settings are updated."
-      );
-    } catch (err) {
-      get().pushToast("error", "Couldn't save settings", formatAppError(err));
-    }
-  },
 
   executePlayerAction: async (player, action, payload) => {
     try {

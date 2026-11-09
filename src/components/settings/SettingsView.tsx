@@ -9,10 +9,11 @@ import {
   Page,
   Row,
   Segmented,
-  TextInput,
   Toggle,
 } from "../ui";
 import { Select } from "../Select";
+import { ServerAppearance } from "../ServerAppearance";
+import type { ActiveTab } from "../../App";
 
 const DEFAULTS: ServerProperties = {
   online_mode: false,
@@ -41,32 +42,40 @@ const AUTOSAVE_OPTIONS = [
   { mins: 0, label: "Only when the game saves itself" },
 ];
 
-export const SettingsView: React.FC = () => {
+export const SettingsView: React.FC<{ onNavigate?: (tab: ActiveTab) => void }> = ({ onNavigate }) => {
   const {
-    properties,
     hardware,
     customRamMb,
     setCustomRamMb,
     autosaveMins,
     setAutosaveMins,
-    updateProperties,
     pushToast,
   } = useServerStore();
-  const [draft, setDraft] = useState<ServerProperties>(properties ?? DEFAULTS);
+  // These are the settings new worlds start with, not the ones of any one world.
+  const [draft, setDraft] = useState<ServerProperties>(DEFAULTS);
   const [installingJava, setInstallingJava] = useState(false);
 
   useEffect(() => {
-    if (properties) setDraft(properties);
-  }, [properties]);
+    tauriApi
+      .getDefaultProperties()
+      .then(setDraft)
+      .catch((err) => pushToast("error", "Couldn't load your settings", formatAppError(err)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   /** Update locally and save right away. */
-  const save = <K extends keyof ServerProperties>(
+  const save = async <K extends keyof ServerProperties>(
     key: K,
     value: ServerProperties[K],
   ) => {
     const next = { ...draft, [key]: value };
     setDraft(next);
-    updateProperties(next);
+    try {
+      setDraft(await tauriApi.saveDefaultProperties(next));
+      pushToast("success", "Saved", "New worlds will start with this.");
+    } catch (err) {
+      pushToast("error", "Couldn't save settings", formatAppError(err));
+    }
   };
 
   /** Update locally only (used while dragging a slider or typing). */
@@ -130,6 +139,19 @@ export const SettingsView: React.FC = () => {
 
   return (
     <Page title="Settings" subtitle="Changes save automatically.">
+      <div className="rounded-2xl bg-brand/15 p-4 flex items-center gap-4">
+        <p className="flex-1 text-sm font-bold">
+          The game rules, welcome message, icon and advanced options below are the starting
+          settings for <span className="text-brand">new worlds</span>. Every world keeps its own
+          copy: to change an existing world, open it in Worlds and use its Settings.
+        </p>
+        {onNavigate && (
+          <Button size="sm" onClick={() => onNavigate("worlds")} className="shrink-0">
+            Open Worlds
+          </Button>
+        )}
+      </div>
+
       <Card title="Game rules">
         <Row title="Keep inventory" hint="Nobody loses their stuff on death.">
           <Toggle
@@ -185,6 +207,16 @@ export const SettingsView: React.FC = () => {
             ]}
           />
         </Row>
+      </Card>
+
+      <Card title="Server list">
+        <ServerAppearance
+          worldId={null}
+          motd={draft.motd}
+          onMotdChange={(motd) => edit("motd", motd)}
+          onMotdCommit={(motd) => save("motd", motd)}
+          maxPlayers={draft.max_players}
+        />
       </Card>
 
       <Card title="Performance">
@@ -255,15 +287,6 @@ export const SettingsView: React.FC = () => {
       <div className="px-2 pb-4">
         <Disclosure label="Advanced">
           <Card>
-            <Row title="Server name" hint="Shown in the Minecraft server list.">
-              <TextInput
-                value={draft.motd}
-                onChange={(e) => edit("motd", e.target.value)}
-                onBlur={(e) => save("motd", e.target.value)}
-                className="w-64"
-                aria-label="Server name"
-              />
-            </Row>
             {distanceSlider({
               k: "view_distance",
               title: "View distance",
