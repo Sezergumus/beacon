@@ -219,6 +219,11 @@ export interface PlayerPlaytime {
   last_seen_ms: number | null;
 }
 
+export interface AppSettings {
+  close_to_tray: boolean;
+  onboarding_done: boolean;
+}
+
 export interface WhitelistEntry {
   uuid: string;
   name: string;
@@ -440,6 +445,11 @@ export const tauriApi = {
 
   saveWorldProperties: (id: string, props: ServerProperties) =>
     invoke<ServerProperties>("save_world_properties", { id, props }),
+
+  getAppSettings: () => invoke<AppSettings>("get_app_settings"),
+
+  saveAppSettings: (settings: AppSettings) =>
+    invoke<AppSettings>("save_app_settings", { settings }),
 
   getWhitelist: (id: string) => invoke<WhitelistEntry[]>("get_whitelist", { id }),
 

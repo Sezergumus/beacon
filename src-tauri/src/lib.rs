@@ -1,8 +1,10 @@
+pub mod app_settings;
 pub mod content;
 pub mod engine;
 pub mod error;
 pub mod network;
 
+use crate::app_settings::AppSettings;
 use crate::content::modrinth::{
     get_modrinth_project, identify_content_hashes, install_modrinth_project, install_mrpack_archive,
     list_installed_content, remove_installed_content, search_modrinth, InstalledContentItem,
@@ -22,12 +24,72 @@ use crate::network::iroh_node::{NetworkStateSnapshot, P2pNetworkManager};
 use crate::network::migration::{create_world_snapshot, SnapshotInfo};
 use std::path::PathBuf;
 use std::sync::Arc;
-use tauri::{AppHandle, Manager, RunEvent, State};
+use tauri::menu::{Menu, MenuItem};
+use tauri::tray::{MouseButton, MouseButtonState, TrayIconBuilder, TrayIconEvent};
+use tauri::{AppHandle, Manager, RunEvent, State, WindowEvent};
 
 pub struct AppState {
     pub app_data_dir: PathBuf,
     pub runner: Arc<ServerRunner>,
     pub network: Arc<P2pNetworkManager>,
+    pub settings: std::sync::RwLock<AppSettings>,
+}
+
+/// Bring the main window back from the tray (or from behind other windows).
+fn show_main_window(app: &AppHandle) {
+    if let Some(win) = app.get_webview_window("main") {
+        let _ = win.show();
+        let _ = win.unminimize();
+        let _ = win.set_focus();
+    }
+}
+
+fn setup_tray(app: &tauri::App) -> tauri::Result<()> {
+    let open = MenuItem::with_id(app, "open", "Open Beacon", true, None::<&str>)?;
+    let quit = MenuItem::with_id(app, "quit", "Quit Beacon", true, None::<&str>)?;
+    let menu = Menu::with_items(app, &[&open, &quit])?;
+    let mut builder = TrayIconBuilder::with_id("main")
+        .tooltip("Beacon")
+        .menu(&menu)
+        .show_menu_on_left_click(false)
+        .on_menu_event(|app, event| match event.id.as_ref() {
+            "open" => show_main_window(app),
+            // Exiting runs the shutdown hook that saves and stops a running world.
+            "quit" => app.exit(0),
+            _ => {}
+        })
+        .on_tray_icon_event(|tray, event| {
+            if let TrayIconEvent::Click {
+                button: MouseButton::Left,
+                button_state: MouseButtonState::Up,
+                ..
+            } = event
+            {
+                show_main_window(tray.app_handle());
+            }
+        });
+    if let Some(icon) = app.default_window_icon() {
+        builder = builder.icon(icon.clone());
+    }
+    builder.build(app)?;
+    Ok(())
+}
+
+#[tauri::command]
+async fn get_app_settings(state: State<'_, AppState>) -> AppResult<AppSettings> {
+    Ok(state.settings.read().map(|s| s.clone()).unwrap_or_default())
+}
+
+#[tauri::command]
+async fn save_app_settings(
+    state: State<'_, AppState>,
+    settings: AppSettings,
+) -> AppResult<AppSettings> {
+    settings.save(&state.app_data_dir)?;
+    if let Ok(mut guard) = state.settings.write() {
+        *guard = settings.clone();
+    }
+    Ok(settings)
 }
 
 #[tauri::command]
@@ -583,7 +645,31 @@ async fn trigger_host_migration(
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let app = tauri::Builder::default()
+        // A second launch (e.g. the desktop icon while Beacon sits in the tray) just
+        // brings the running window back instead of starting a second server manager.
+        .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
+            show_main_window(app);
+        }))
         .plugin(tauri_plugin_opener::init())
+        .on_window_event(|window, event| {
+            if let WindowEvent::CloseRequested { api, .. } = event {
+                let Some(state) = window.app_handle().try_state::<AppState>() else {
+                    return;
+                };
+                let to_tray = state.settings.read().map(|s| s.close_to_tray).unwrap_or(false);
+                // Only stay in the background while a world is up; otherwise just quit.
+                let world_up = state
+                    .runner
+                    .status
+                    .try_lock()
+                    .map(|s| *s != ServerStatus::Stopped)
+                    .unwrap_or(true);
+                if to_tray && world_up {
+                    api.prevent_close();
+                    let _ = window.hide();
+                }
+            }
+        })
         .setup(|app| {
             let app_data_dir = app
                 .path()
@@ -597,14 +683,19 @@ pub fn run() {
             let runner = Arc::new(ServerRunner::new(app_data_dir.clone()));
             let network = Arc::new(P2pNetworkManager::new(app_data_dir.clone()));
 
+            let settings = std::sync::RwLock::new(AppSettings::load(&app_data_dir));
             app.manage(AppState {
                 app_data_dir,
                 runner,
                 network,
+                settings,
             });
+            setup_tray(app)?;
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
+            get_app_settings,
+            save_app_settings,
             get_hardware_profile,
             list_minecraft_versions,
             provision_java_runtime,

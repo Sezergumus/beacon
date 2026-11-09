@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Check, Download, Loader2 } from "lucide-react";
 import { useServerStore } from "../../stores/useServerStore";
-import { ServerProperties, tauriApi, formatAppError } from "../../lib/tauri";
+import { AppSettings, ServerProperties, tauriApi, formatAppError } from "../../lib/tauri";
 import {
   Button,
   Card,
@@ -54,12 +54,17 @@ export const SettingsView: React.FC<{ onNavigate?: (tab: ActiveTab) => void }> =
   // These are the settings new worlds start with, not the ones of any one world.
   const [draft, setDraft] = useState<ServerProperties>(DEFAULTS);
   const [installingJava, setInstallingJava] = useState(false);
+  const [appSettings, setAppSettings] = useState<AppSettings | null>(null);
 
   useEffect(() => {
     tauriApi
       .getDefaultProperties()
       .then(setDraft)
       .catch((err) => pushToast("error", "Couldn't load your settings", formatAppError(err)));
+    tauriApi
+      .getAppSettings()
+      .then(setAppSettings)
+      .catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -83,6 +88,18 @@ export const SettingsView: React.FC<{ onNavigate?: (tab: ActiveTab) => void }> =
     key: K,
     value: ServerProperties[K],
   ) => setDraft((d) => ({ ...d, [key]: value }));
+
+  const saveApp = async (patch: Partial<AppSettings>) => {
+    if (!appSettings) return;
+    const next = { ...appSettings, ...patch };
+    setAppSettings(next);
+    try {
+      setAppSettings(await tauriApi.saveAppSettings(next));
+    } catch (err) {
+      setAppSettings(appSettings);
+      pushToast("error", "Couldn't save settings", formatAppError(err));
+    }
+  };
 
   const installJava = async () => {
     setInstallingJava(true);
@@ -281,6 +298,19 @@ export const SettingsView: React.FC<{ onNavigate?: (tab: ActiveTab) => void }> =
               {installingJava ? "Installing…" : "Install now"}
             </Button>
           )}
+        </Row>
+      </Card>
+
+      <Card title="Beacon">
+        <Row
+          title="Keep running in the background"
+          hint="Closing the window while a world is open hides Beacon in the system tray instead of stopping the world. Use the tray icon to open it again or quit."
+        >
+          <Toggle
+            checked={appSettings?.close_to_tray ?? true}
+            onChange={(v) => saveApp({ close_to_tray: v })}
+            label="Keep running in the background"
+          />
         </Row>
       </Card>
 
