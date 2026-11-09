@@ -130,7 +130,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
                 variant="secondary"
                 size="lg"
                 onClick={stopServer}
-                disabled={status === "stopping"}
+                disabled={!isRunning}
                 icon={<Square className="w-4 h-4 fill-current" />}
               >
                 Stop
