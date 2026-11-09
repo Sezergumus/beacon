@@ -16,8 +16,8 @@ export function BeaconArt({ variant = "sidebar", status = "stopped" }: BeaconArt
   const lightFilter = `beacon-light-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
 
   useGSAP(() => {
-    const isStarting = status === "provisioning" || status === "starting";
-    if (variant !== "card" || !isStarting) return;
+    const isTransitioning = status === "provisioning" || status === "starting" || status === "stopping";
+    if (variant !== "card" || !isTransitioning) return;
 
     const media = gsap.matchMedia();
     media.add("(prefers-reduced-motion: no-preference)", () => {

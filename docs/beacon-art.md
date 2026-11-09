@@ -13,8 +13,8 @@ the stone pedestal stays dark. No separate lit bitmap is required.
 
 | Server state | Light |
 | --- | --- |
-| Stopped / stopping | Off |
-| Provisioning / starting | Smooth on/off blink |
+| Stopped | Off |
+| Provisioning / starting / stopping | Smooth on/off blink |
 | Running | Steady on |
 
 Reduced motion replaces blinking with a steady intermediate light. Blinking

@@ -114,11 +114,13 @@
 
 /* A steady indicator replaces blinking when reduced motion is preferred. */
 .beacon-art[data-state="starting"] .beacon-art__light,
+.beacon-art[data-state="stopping"] .beacon-art__light,
 .beacon-art[data-state="provisioning"] .beacon-art__light {
   opacity: 0.55;
 }
 
 .beacon-art[data-state="starting"] .beacon-art__halo,
+.beacon-art[data-state="stopping"] .beacon-art__halo,
 .beacon-art[data-state="provisioning"] .beacon-art__halo {
   opacity: 0.25;
 }
