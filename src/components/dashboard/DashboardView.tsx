@@ -28,7 +28,6 @@ import {
   EmptyState,
   PlayerHead,
   ProgressBar,
-  Segmented,
   TextInput,
 } from "../ui";
 
@@ -36,46 +35,27 @@ interface DashboardViewProps {
   onNavigate?: (tab: ActiveTab) => void;
 }
 
-const VERSION_NOTES: Record<string, string> = {
-  "1.21.1": "most popular",
-  "1.20.1": "best for mods",
-  "1.16.5": "classic modpacks",
-  "1.12.2": "classic modpacks",
-  "1.8.8": "PvP classic",
+const CORE_LABELS: Record<ServerCore, string> = {
+  paper: "Paper",
+  fabric: "Fabric",
+  neoforge: "NeoForge",
 };
-
-/** `1.21.4` and `1.21` belong to the group "1.21"; year-based `26.1.2` to "26.1". */
-const versionGroup = (v: string) => v.split(".").slice(0, 2).join(".");
-
 
 export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
   const {
     status,
-    selectedCore,
     selectedVersion,
     telemetry,
     jvmProgress,
-    setSelectedCore,
-    setSelectedVersion,
     stopServer,
     sendCommand,
     executePlayerAction,
     openPlayerInventory,
     worlds,
     selectedWorldId,
-    versions,
   } = useServerStore();
-  const versionList = versions[selectedCore];
-  const newestVersion = versionList?.[0];
-  const versionGroups = React.useMemo(() => {
-    const groups = new Map<string, string[]>();
-    for (const v of versionList ?? []) {
-      const g = versionGroup(v);
-      groups.set(g, [...(groups.get(g) ?? []), v]);
-    }
-    return [...groups.entries()];
-  }, [versionList]);
-  const worldName = worlds?.find((w) => w.kind === "world" && w.id === selectedWorldId)?.name;
+  const worldInfo = worlds?.find((w) => w.kind === "world" && w.id === selectedWorldId);
+  const worldName = worldInfo?.name;
 
   const { isBusy: isNetBusy, startHostingRoom, joinFriendRoom, leaveSession } = useNetworkStore();
 
@@ -101,7 +81,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
     ? `${worldName ? `“${worldName}” · ` : ""}Friends can join with your code below.`
     : isTransitioning
     ? "This can take a minute the first time."
-    : "Pick a version and press Start. Beacon handles the rest.";
+    : "Pick a world and press Start. Beacon handles the rest.";
 
   return (
     <div className="h-full overflow-y-auto [scrollbar-gutter:stable]">
@@ -148,47 +128,11 @@ export const DashboardView: React.FC<DashboardViewProps> = ({ onNavigate }) => {
             >
               <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
                 <WorldPicker />
-                <label className="flex items-center gap-3">
-                  <span className="font-bold text-soft">Version</span>
-                  <select
-                    value={selectedVersion}
-                    onChange={(e) => setSelectedVersion(e.target.value)}
-                    disabled={!versionList}
-                    className="h-11 rounded-xl bg-raised px-3 font-bold text-ink cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand/60 disabled:opacity-50"
-                  >
-                    {!versionList && <option value={selectedVersion}>Loading versions…</option>}
-                    {versionGroups.map(([group, items]) => (
-                      <optgroup key={group} label={`${group}.x`}>
-                        {items.map((v) => (
-                          <option key={v} value={v}>
-                            {v}
-                            {v === newestVersion ? " (newest)" : VERSION_NOTES[v] ? ` (${VERSION_NOTES[v]})` : ""}
-                          </option>
-                        ))}
-                      </optgroup>
-                    ))}
-                  </select>
-                </label>
-                <div
-                  className="flex items-center gap-3"
-                  title={
-                    selectedCore === "paper"
-                      ? "Classic Minecraft with plugin support."
-                      : "Pick this if you want to add mods."
-                  }
-                >
-                  <span className="font-bold text-soft">Type</span>
-                  <Segmented<ServerCore>
-                    value={selectedCore}
-                    onChange={setSelectedCore}
-                    options={[
-                      { id: "paper", label: "Paper" },
-                      { id: "fabric", label: "Fabric" },
-                      { id: "neoforge", label: "NeoForge" },
-                    ]}
-                  />
-                </div>
-                <span className="text-sm text-faint">Applies to this world only.</span>
+                {worldInfo?.core && worldInfo.mc_version && (
+                  <span className="text-sm text-faint">
+                    {CORE_LABELS[worldInfo.core]} {worldInfo.mc_version}
+                  </span>
+                )}
               </div>
             </div>
             <div

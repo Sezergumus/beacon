@@ -81,14 +81,17 @@ interface ServerStoreState {
   /** Switch to another world: its own version, type, mods and settings load. */
   selectWorld: (id: string) => Promise<void>;
   /** Makes a world, selects it and returns its id (null if it failed). */
-  createWorld: (name: string, options?: NewWorldOptions) => Promise<string | null>;
+  createWorld: (
+    name: string,
+    core: ServerCore,
+    version: string,
+    options?: NewWorldOptions,
+  ) => Promise<string | null>;
   renameWorld: (id: string, name: string) => Promise<boolean>;
   pushToast: (type: ToastNotice["type"], title: string, message: string) => void;
   dismissToast: (id: string) => void;
   initializeServerStore: () => Promise<void>;
   loadVersions: (core: ServerCore) => Promise<void>;
-  setSelectedCore: (core: ServerCore) => void;
-  setSelectedVersion: (version: string) => void;
   setCustomRamMb: (ramMb: number) => Promise<void>;
   setAutosaveMins: (mins: number) => void;
   startServer: () => Promise<void>;
@@ -173,20 +176,6 @@ const activateWorld = async (id: string) => {
   }
 };
 
-/** Save the version/type shown in the controls onto the selected world only. */
-const saveWorldConfig = async () => {
-  const { selectedWorldId, selectedCore, selectedVersion, pushToast, refreshWorlds } =
-    useServerStore.getState();
-  if (!selectedWorldId) return; // no world yet: the first one is created with these values
-  try {
-    await tauriApi.setWorldConfig(selectedWorldId, selectedCore, selectedVersion);
-    await refreshWorlds();
-  } catch (err) {
-    pushToast("error", "Couldn't change the version", formatAppError(err));
-    await refreshWorlds();
-  }
-};
-
 export const useServerStore = create<ServerStoreState>((set, get) => ({
   hardware: null,
   status: "stopped",
@@ -245,10 +234,9 @@ export const useServerStore = create<ServerStoreState>((set, get) => ({
     get().refreshWorlds();
   },
 
-  createWorld: async (name, options) => {
-    const { selectedCore, selectedVersion } = get();
+  createWorld: async (name, core, version, options) => {
     try {
-      const meta = await tauriApi.createWorld(name, selectedCore, selectedVersion, options);
+      const meta = await tauriApi.createWorld(name, core, version, options);
       set({ selectedWorldId: meta.id });
       await activateWorld(meta.id);
       await get().refreshWorlds();
@@ -394,19 +382,6 @@ export const useServerStore = create<ServerStoreState>((set, get) => ({
       );
     }
     keepVersionValid(core);
-  },
-
-  setSelectedCore: (selectedCore) => {
-    set({ selectedCore });
-    // Each server type supports different versions; load them, then fix the pick if needed.
-    get()
-      .loadVersions(selectedCore)
-      .then(() => keepVersionValid(selectedCore))
-      .then(saveWorldConfig);
-  },
-  setSelectedVersion: (selectedVersion) => {
-    set({ selectedVersion });
-    saveWorldConfig();
   },
 
   setAutosaveMins: (mins) => {

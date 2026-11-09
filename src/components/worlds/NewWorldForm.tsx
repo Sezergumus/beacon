@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { Loader2, Skull } from "lucide-react";
 import { useServerStore } from "../../stores/useServerStore";
+import type { ServerCore } from "../../lib/tauri";
 import { Button, Disclosure, TextInput, Toggle } from "../ui";
+import { VersionFields } from "./VersionFields";
 
-/** Name a new world and, if wanted, pick its seed and hardcore mode (fixed once it's made). */
+/** Name a new world, pick its version and type, and if wanted its seed and hardcore mode (all fixed once it's made). */
 export const NewWorldForm: React.FC<{
   placeholder: string;
   /** Shown left of the name box. */
@@ -15,6 +17,9 @@ export const NewWorldForm: React.FC<{
   className?: string;
 }> = ({ placeholder, label, autoFocus, onCancel, onCreated, className }) => {
   const createWorld = useServerStore((s) => s.createWorld);
+  // Start from what the current world uses; changing it here never touches that world.
+  const [core, setCore] = useState<ServerCore>(() => useServerStore.getState().selectedCore);
+  const [version, setVersion] = useState(() => useServerStore.getState().selectedVersion);
   const [name, setName] = useState("");
   const [seed, setSeed] = useState("");
   const [hardcore, setHardcore] = useState(false);
@@ -23,7 +28,7 @@ export const NewWorldForm: React.FC<{
   const submit = async () => {
     if (!name.trim() || saving) return;
     setSaving(true);
-    const id = await createWorld(name, { seed: seed.trim() || undefined, hardcore });
+    const id = await createWorld(name, core, version, { seed: seed.trim() || undefined, hardcore });
     setSaving(false);
     if (id) {
       setName("");
@@ -66,6 +71,15 @@ export const NewWorldForm: React.FC<{
           </Button>
         )}
       </div>
+
+      <VersionFields
+        core={core}
+        version={version}
+        onChange={(c, v) => {
+          setCore(c);
+          setVersion(v);
+        }}
+      />
 
       <Disclosure label="More options">
         <div className="flex flex-col gap-4 max-w-xl">
