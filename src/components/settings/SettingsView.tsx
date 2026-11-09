@@ -1,17 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { Check, Download, Loader2 } from "lucide-react";
 import { useServerStore } from "../../stores/useServerStore";
-import { AppSettings, ServerProperties, tauriApi, formatAppError } from "../../lib/tauri";
-import { useAppStore } from "../../stores/useAppStore";
 import {
-  Button,
-  Card,
-  Disclosure,
-  Page,
-  Row,
-  Segmented,
-  Toggle,
-} from "../ui";
+  AppSettings,
+  ServerProperties,
+  tauriApi,
+  formatAppError,
+} from "../../lib/tauri";
+import { useAppStore } from "../../stores/useAppStore";
+import { Button, Card, Disclosure, Page, Row, Segmented, Toggle } from "../ui";
 import { Select } from "../Select";
 import { ServerAppearance } from "../ServerAppearance";
 import type { ActiveTab } from "../../App";
@@ -43,7 +40,9 @@ const AUTOSAVE_OPTIONS = [
   { mins: 0, label: "Only when the game saves itself" },
 ];
 
-export const SettingsView: React.FC<{ onNavigate?: (tab: ActiveTab) => void }> = ({ onNavigate }) => {
+export const SettingsView: React.FC<{
+  onNavigate?: (tab: ActiveTab) => void;
+}> = ({ onNavigate }) => {
   const {
     hardware,
     customRamMb,
@@ -62,7 +61,9 @@ export const SettingsView: React.FC<{ onNavigate?: (tab: ActiveTab) => void }> =
     tauriApi
       .getDefaultProperties()
       .then(setDraft)
-      .catch((err) => pushToast("error", "Couldn't load your settings", formatAppError(err)));
+      .catch((err) =>
+        pushToast("error", "Couldn't load your settings", formatAppError(err)),
+      );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -144,12 +145,18 @@ export const SettingsView: React.FC<{ onNavigate?: (tab: ActiveTab) => void }> =
     <Page title="Settings" subtitle="Changes save automatically.">
       <div className="rounded-2xl bg-brand/15 p-4 flex items-center gap-4">
         <p className="flex-1 text-sm font-bold">
-          The game rules, welcome message, icon and advanced options below are the starting
-          settings for <span className="text-brand">new worlds</span>. Every world keeps its own
-          copy: to change an existing world, open it in Worlds and use its Settings.
+          The game rules, welcome message, icon and advanced options below are
+          the starting settings for{" "}
+          <span className="text-brand">new worlds</span>. Every world keeps its
+          own copy: to change an existing world, open it in Worlds and use its
+          Settings.
         </p>
         {onNavigate && (
-          <Button size="sm" onClick={() => onNavigate("worlds")} className="shrink-0">
+          <Button
+            size="sm"
+            onClick={() => onNavigate("worlds")}
+            className="shrink-0"
+          >
             Open Worlds
           </Button>
         )}
@@ -253,7 +260,10 @@ export const SettingsView: React.FC<{ onNavigate?: (tab: ActiveTab) => void }> =
             className="w-64"
             value={autosaveMins}
             onChange={setAutosaveMins}
-            options={AUTOSAVE_OPTIONS.map((o) => ({ value: o.mins, label: o.label }))}
+            options={AUTOSAVE_OPTIONS.map((o) => ({
+              value: o.mins,
+              label: o.label,
+            }))}
           />
         </Row>
         <Row
@@ -289,8 +299,8 @@ export const SettingsView: React.FC<{ onNavigate?: (tab: ActiveTab) => void }> =
 
       <Card title="Beacon">
         <Row
-          title="When you close the window"
-          hint="Beacon in the system tray keeps your world running. Use the tray icon to open it again or quit."
+          title="Minimize to tray"
+          hint="Keeps your server running on the background."
         >
           <Select<AppSettings["close_action"]>
             aria-label="When you close the window"
@@ -299,9 +309,12 @@ export const SettingsView: React.FC<{ onNavigate?: (tab: ActiveTab) => void }> =
             value={appSettings?.close_action ?? "tray_when_running"}
             onChange={(close_action) => saveApp({ close_action })}
             options={[
-              { value: "quit", label: "Close Beacon" },
-              { value: "tray_when_running", label: "Minimize to tray if a world is open" },
-              { value: "tray_always", label: "Always minimize to tray" },
+              { value: "quit", label: "Disabled" },
+              {
+                value: "tray_when_running",
+                label: "Minimize when world is open",
+              },
+              { value: "tray_always", label: "Always minimize" },
             ]}
           />
         </Row>
