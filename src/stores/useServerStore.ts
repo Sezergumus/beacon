@@ -123,6 +123,9 @@ const FALLBACK_VERSIONS: Record<ServerCore, string[]> = {
   neoforge: ["1.21.4", "1.21.1", "1.20.4"],
 };
 
+/** Set once the store has loaded its data and bound the backend event listeners. */
+let storeInitialized = false;
+
 /** File hash (SHA-512) -> Modrinth project it belongs to, or null if Modrinth doesn't know the file. */
 const projectByHash = new Map<string, string | null>();
 
@@ -276,6 +279,10 @@ export const useServerStore = create<ServerStoreState>((set, get) => ({
     set((s) => ({ toasts: s.toasts.filter((t) => t.id !== id) })),
 
   initializeServerStore: async () => {
+    // React StrictMode mounts twice in dev; a second run would add every listener again
+    // and each log line would show up twice.
+    if (storeInitialized) return;
+    storeInitialized = true;
     try {
       const [hw, props, telemetry, logs] = await Promise.all([
         tauriApi.getHardwareProfile(),
