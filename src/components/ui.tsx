@@ -1,5 +1,5 @@
 import React from "react";
-import { Check, ChevronDown, X, type LucideIcon } from "lucide-react";
+import { Check, ChevronDown, Trash2, X, type LucideIcon } from "lucide-react";
 
 const cx = (...parts: (string | false | null | undefined)[]) =>
   parts.filter(Boolean).join(" ");
@@ -146,11 +146,30 @@ export const TextInput: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = 
 );
 
 /** Stands where the "Add" button was once the mod / plugin is in the world. */
-export const InstalledBadge: React.FC = () => (
-  <span className="inline-flex items-center justify-center gap-2 h-11 px-5 rounded-xl bg-brand/15 text-brand font-bold text-[15px] whitespace-nowrap select-none">
-    <Check className="w-4 h-4" /> Installed
-  </span>
-);
+export const InstalledBadge: React.FC<{ onUninstall?: () => void }> = ({ onUninstall }) => {
+  if (!onUninstall) {
+    return (
+      <span className="inline-flex items-center justify-center gap-2 h-11 px-5 rounded-xl bg-brand/15 text-brand font-bold text-[15px] whitespace-nowrap select-none">
+        <Check className="w-4 h-4" /> Installed
+      </span>
+    );
+  }
+  // Both labels share one grid cell so the button keeps its size when it swaps on hover.
+  return (
+    <button
+      type="button"
+      onClick={onUninstall}
+      className="group inline-grid h-11 px-5 rounded-xl bg-brand/15 text-brand hover:bg-danger/15 hover:text-danger focus-visible:bg-danger/15 focus-visible:text-danger focus:outline-none font-bold text-[15px] whitespace-nowrap select-none cursor-pointer transition-colors"
+    >
+      <span className="col-start-1 row-start-1 inline-flex items-center justify-center gap-2 group-hover:invisible group-focus-visible:invisible">
+        <Check className="w-4 h-4" /> Installed
+      </span>
+      <span className="col-start-1 row-start-1 inline-flex items-center justify-center gap-2 invisible group-hover:visible group-focus-visible:visible">
+        <Trash2 className="w-4 h-4" /> Uninstall
+      </span>
+    </button>
+  );
+};
 
 export const Toggle: React.FC<{
   checked: boolean;

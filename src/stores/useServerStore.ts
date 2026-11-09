@@ -101,6 +101,8 @@ interface ServerStoreState {
   installModrinthItem: (hit: ModrinthSearchHit) => Promise<void>;
   installLocalMrpack: (path: string) => Promise<void>;
   refreshInstalledContent: () => Promise<void>;
+  /** Remove every installed file that belongs to this Modrinth project. */
+  removeProject: (projectId: string) => Promise<void>;
   removeContentItem: (filename: string, kind: string) => Promise<void>;
 }
 
@@ -612,6 +614,13 @@ export const useServerStore = create<ServerStoreState>((set, get) => ({
     } catch {
       // Offline or Modrinth is down: the list still shows, only the "Installed" marks lag behind.
     }
+  },
+
+  removeProject: async (projectId) => {
+    const files = get().installedContent.filter(
+      (i) => projectByHash.get(i.sha512.toLowerCase()) === projectId,
+    );
+    for (const f of files) await get().removeContentItem(f.filename, f.kind);
   },
 
   removeContentItem: async (filename, kind) => {

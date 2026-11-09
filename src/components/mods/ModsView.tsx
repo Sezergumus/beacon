@@ -32,6 +32,7 @@ export const ModsView: React.FC = () => {
     installLocalMrpack,
     refreshInstalledContent,
     removeContentItem,
+    removeProject,
   } = useServerStore();
 
   const single = selectedCore === "paper" ? "plugin" : "mod";
@@ -144,7 +145,7 @@ export const ModsView: React.FC = () => {
                 <p className="text-sm text-soft line-clamp-2 mt-0.5">{hit.description}</p>
               </div>
               {installed ? (
-                <InstalledBadge />
+                <InstalledBadge onUninstall={() => removeProject(hit.project_id)} />
               ) : (
                 <Button
                   onClick={() => installModrinthItem(hit)}

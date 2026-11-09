@@ -142,7 +142,7 @@ const LinkButton: React.FC<{ url?: string | null; icon: React.ReactNode; childre
   ) : null;
 
 export const ModDetailsModal: React.FC<{ hit: ModrinthSearchHit; onClose: () => void }> = ({ hit, onClose }) => {
-  const { selectedCore, selectedVersion, installingSlug, installedProjectIds, installModrinthItem, pushToast } =
+  const { selectedCore, selectedVersion, installingSlug, installedProjectIds, installModrinthItem, removeProject, pushToast } =
     useServerStore();
   const [details, setDetails] = useState<ModrinthProjectDetails | null>(null);
   const [failed, setFailed] = useState(false);
@@ -218,7 +218,7 @@ export const ModDetailsModal: React.FC<{ hit: ModrinthSearchHit; onClose: () => 
             </div>
           </div>
           {installed ? (
-            <InstalledBadge />
+            <InstalledBadge onUninstall={() => removeProject(hit.project_id)} />
           ) : (
             <Button
               variant="primary"
