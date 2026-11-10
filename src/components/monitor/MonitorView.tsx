@@ -79,26 +79,26 @@ export const MonitorView: React.FC = () => {
         {status === "running"
           ? "Live"
           : status === "stopped"
-          ? "World is closed — numbers appear once it's running"
+          ? "World is closed. Numbers appear once it's running"
           : "Getting ready…"}
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Tile
           label="Speed (TPS)"
-          value={live ? tps.toFixed(1) : "—"}
+          value={live ? tps.toFixed(1) : "-"}
           note={live ? tpsNote.t : undefined}
           noteTone={tpsNote.tone}
         />
         <Tile
           label="Memory"
-          value={live ? gb(ramUsed) : "—"}
+          value={live ? gb(ramUsed) : "-"}
           note={live ? `${gb(ramMax)} set aside for the game` : undefined}
         />
-        <Tile label="Processor" value={live ? `${cpu.toFixed(0)}%` : "—"} note={live ? "of your PC" : undefined} />
+        <Tile label="Processor" value={live ? `${cpu.toFixed(0)}%` : "-"} note={live ? "of your PC" : undefined} />
         <Tile
           label="Online for"
-          value={live ? formatUptime(telemetry?.uptime_secs ?? 0) : "—"}
+          value={live ? formatUptime(telemetry?.uptime_secs ?? 0) : "-"}
           note={live ? `${players} ${players === 1 ? "player" : "players"}${properties ? ` of ${properties.max_players}` : ""}` : undefined}
         />
       </div>

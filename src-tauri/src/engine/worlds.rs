@@ -370,7 +370,7 @@ pub fn update_world_config(
     save_registry(app_data_dir, &worlds)
 }
 
-/// The world to launch: the requested one, else the first one — and if there are
+/// The world to launch: the requested one, else the first one, and if there are
 /// none at all, a fresh "My world" with the given defaults.
 pub fn resolve_world(
     app_data_dir: &Path,

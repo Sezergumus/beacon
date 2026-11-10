@@ -63,7 +63,7 @@ Minecraft requires standard TCP sockets, while CGNAT hole punching requires UDP.
    - Rust resolves the `iroh::NodeAddr` from `pkarr`, establishes a direct P2P QUIC connection, and binds a local TCP listener on `127.0.0.1:<dynamic_port>`.
    - **Fake LAN Discovery:** Spawn a background UDP task broadcasting to multicast address `224.0.2.60:4445` every 1.5 seconds with payload:
      `[MOTD]§a[P2P] Friend's Server[/MOTD][AD]<dynamic_port>[/AD]`
-   - Result: The server appears automatically in the friend's Minecraft Multiplayer menu under **"LAN Worlds"**—zero IP or port typing required.
+   - Result: The server appears automatically in the friend's Minecraft Multiplayer menu under **"LAN Worlds"**: zero IP or port typing required.
 
 ---
 
@@ -75,8 +75,8 @@ Home users must never manually install Java or edit `.bat` files.
    - Check `app_data_dir/runtimes/java-21` (or Java 17 for legacy MC versions).
    - If missing, query the **Adoptium v3 API** (`https://api.adoptium.net/v3/binary/latest/21/ga/...`) for the user's OS/Arch and extract it silently.
 2. **Core Selection:**
-   - **PaperMC** (Default for Vanilla/Plugin servers — fetched via PaperMC Fill v2 API).
-   - **Fabric** (Default for Modded — auto-installs `Lithium` and `FerriteCore` from Modrinth API by default to cut RAM usage by 40%).
+   - **PaperMC** (Default for Vanilla/Plugin servers, fetched via PaperMC Fill v2 API).
+   - **Fabric** (Default for Modded, auto-installs `Lithium` and `FerriteCore` from Modrinth API by default to cut RAM usage by 40%).
    - **NeoForge** (For heavy modpacks).
 3. **Smart JVM Flags (`sysinfo`):**
    - Detect available physical memory. Allocate `clamp(free_ram * 0.65, 2048MB, 10240MB)`.
@@ -215,5 +215,5 @@ Follow these phases sequentially. Complete and verify each phase before moving t
 ## 6. Coding Guidelines & Guardrails
 
 - **Never Block the Async Runtime:** Use `tokio::task::spawn_blocking` for synchronous CPU-heavy operations like `zstd` compression, zip extraction, or `fastnbt` deserialization.
-- **Graceful Cleanup is Mandatory:** Register handlers on Tauri's `RunEvent::ExitRequested` to ensure the child `java` process always receives `stop\n` and terminates cleanly—never leave orphan `java.exe` processes running in the background.
+- **Graceful Cleanup is Mandatory:** Register handlers on Tauri's `RunEvent::ExitRequested` to ensure the child `java` process always receives `stop\n` and terminates cleanly, never leave orphan `java.exe` processes running in the background.
 - **Error Handling:** Use `thiserror` and `anyhow` in Rust; return serializable `Result<T, AppError>` from all `#[tauri::command]` functions so the UI can display clear, non-technical toast notifications to home users.

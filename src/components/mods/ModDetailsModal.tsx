@@ -40,7 +40,7 @@ const TYPE_LABELS: Record<string, string> = { mod: "Mod", plugin: "Plugin", modp
 
 const formatDate = (iso: string) => {
   const d = new Date(iso);
-  return Number.isNaN(d.getTime()) ? "—" : d.toLocaleDateString([], { dateStyle: "medium" });
+  return Number.isNaN(d.getTime()) ? "-" : d.toLocaleDateString([], { dateStyle: "medium" });
 };
 
 const prettyTag = (tag: string) => tag.replace(/-/g, " ");
@@ -91,7 +91,7 @@ const CompatNotice: React.FC<{
     <Notice tone="warn" icon={<AlertTriangle className="w-5 h-5" />}>
       {!loaderOk
         ? `This doesn't list support for ${CORE_LABELS[core]}.`
-        : `No build for ${mcVersion} yet${newest ? ` — the newest it supports is ${newest}` : ""}.`}{" "}
+        : `No build for ${mcVersion} yet${newest ? `, the newest it supports is ${newest}` : ""}.`}{" "}
       Adding it may fail or not work in this world ({label}).
     </Notice>
   );

@@ -238,15 +238,15 @@ export const WorldDetailsModal: React.FC<{
               <Stat label="Size on disk">{formatSize(details.size_bytes)}</Stat>
               <Stat label="Created">{new Date(details.created_ms).toLocaleDateString()}</Stat>
               <Stat label="Game version">
-                {details.game_version ?? details.mc_version ?? "—"}
+                {details.game_version ?? details.mc_version ?? "-"}
               </Stat>
               <Stat label="In-game age">
                 {details.world_age_ticks === null
-                  ? "—"
+                  ? "-"
                   : `${Math.floor(details.world_age_ticks / 24000)} days`}
               </Stat>
               <Stat label="Spawn">
-                {details.spawn ? details.spawn.join(", ") : "—"}
+                {details.spawn ? details.spawn.join(", ") : "-"}
               </Stat>
             </div>
             <div
