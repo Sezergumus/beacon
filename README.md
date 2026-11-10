@@ -1,68 +1,184 @@
-# Beacon — Zero-Cost P2P Minecraft Server Manager
+<div align="center">
 
-**Beacon** is an ultra-lightweight, zero-hosting-cost desktop application built with **Tauri v2 (Rust + React 19 / TypeScript / Tailwind CSS)** that enables any home user behind CGNAT or strict firewalls to host a fully optimized, modded or plugin-backed Minecraft Java Server with **one click**, and allows friends to join via a human-readable **Room Code** (`crimson-dragon-42`) without port forwarding, VPNs, or paid relays.
+<img src="public/beacon-icon.png" alt="Beacon" width="120" />
 
----
+# Beacon
 
-## Key Subsystems
+**Minecraft with friends, without the hassle.**
 
-1. **Zero-Config JVM Engine (`src-tauri/src/engine/jvm.rs` & `runner.rs`):**
-   - Automatically detects OS/Arch and provisions Portable **Java 21** from the **Adoptium v3 API** (`app_data_dir/runtimes/java-21`).
-   - Hardware-aware RAM allocation (`clamp(free_ram * 0.65, 2048MB, 10240MB)`) via `sysinfo`.
-   - Injects **Generational ZGC** (`-XX:+UseZGC -XX:+ZGenerational`) when allocated RAM >= 6 GB on Java 21+, or **Aikar's G1GC Flags** otherwise.
-   - Supports **PaperMC** (via PaperMC Fill v2 API), **Fabric** (auto-installs `Lithium` & `FerriteCore` from Modrinth API), and **NeoForge**.
-   - Registers a graceful cleanup hook on `RunEvent::ExitRequested` (`save-all flush` -> `stop\n`) so orphan `java.exe` processes are never left running.
+Turn your PC into a Minecraft server in one click. Share a short code, your friends hop in.<br />
+No port forwarding. No VPNs. No monthly bills.
 
-2. **Serverless Room Codes & TCP-over-QUIC P2P Bridge (`src-tauri/src/network/`):**
-   - Derives a deterministic Ed25519 keypair from a 3-word Room Code and publishes the Host's `iroh::NodeAddr` to the **BitTorrent Mainline DHT** via `pkarr`.
-   - Multiplexes raw game traffic over `/aethermc/mc-tunnel/1` (`tokio::io::copy_bidirectional` to `127.0.0.1:25565`) and JSON-RPC control/manifests/heartbeats over `/aethermc/control/1`.
-   - Broadcasts `[MOTD]§a[P2P] Friend's Server[/MOTD][AD]<dynamic_port>[/AD]` to UDP multicast `224.0.2.60:4445` every 1.5s on the client side so the server appears automatically under **Multiplayer -> LAN Worlds**.
+[![License: GPL v3](https://img.shields.io/badge/license-GPL--3.0-3ddbd9?style=flat-square)](LICENSE)
+[![Latest release](https://img.shields.io/github/v/release/Sezergumus/beacon?style=flat-square&color=3ddbd9)](https://github.com/Sezergumus/beacon/releases/latest)
+![Platform](https://img.shields.io/badge/platform-Windows%2010%20%26%2011-1f2431?style=flat-square)
+![Built with Tauri](https://img.shields.io/badge/built%20with-Tauri%20v2-1f2431?style=flat-square)
 
-3. **Visual Server Control & Live NBT Inventory Inspector (`src-tauri/src/engine/properties.rs` & `nbt_inspector.rs`):**
-   - Instant visual toggles for `Cracked/Offline Mode (online-mode)`, `Keep Inventory (gamerule)`, `Difficulty`, `PvP`, `View Distance`, `Simulation Distance`, `Spawn Protection`, and `Whitelist`.
-   - 1-Click Player Action buttons (`OP/De-OP`, `Heal & Feed`, `Kill`, `Clear Inventory`, `Gamemode`, `Teleport`, `Kick`, `Ban`) piped directly to child `stdin`.
-   - Watches `world/playerdata/<uuid>.dat` via `notify`, decompresses GZip NBT via `flate2` + `fastnbt`, and renders an interactive 36-slot + 4 armor + offhand grid with 1-click slot deletion and item spawning.
+[**Download**](https://github.com/Sezergumus/beacon/releases/latest) ·
+[How it works](#-how-it-works) ·
+[Features](#-features) ·
+[FAQ](#-faq) ·
+[Build from source](#-build-from-source)
 
-4. **Modrinth Integration & Automatic Pre-Join P2P Mod Sync (`src-tauri/src/content/`):**
-   - Search and 1-click install `.mrpack` modpacks, Fabric/NeoForge mods, and Paper plugins with 12-stream bounded parallel downloads (`tokio::sync::Semaphore`) and SHA-512 verification.
-   - Pre-Join Hook compares `ServerModManifest` on `/aethermc/control/1`, pulls standard mods from Modrinth CDN, and streams custom mods/overrides directly from the Host via Iroh P2P with BLAKE3 verification.
+<br />
 
-5. **Automatic Host Migration & Zstd Swarm Replicas (`src-tauri/src/network/migration.rs`):**
-   - Packages `world/`, `mods/`, and `server.properties` into `.tar.zst` snapshots (`zstd` + `tar`) every 10 minutes and upon graceful shutdown.
-   - Replicates snapshots to **Trusted Co-Hosts** in the background and supports both **1-Click Graceful Handover** and **15-Second Crash Failover**.
+<img src="website/assets/screenshots/dashboard.png" alt="Beacon's home screen: your world is open, with a room code to share and the list of friends playing" width="860" />
 
----
+</div>
 
-## Development & Build Commands
+<br />
+
+## ✨ How it works
+
+|   | |
+|---|---|
+| **1. Press Start** | Pick a world and hit Start. Beacon sets up Java and everything else for you. |
+| **2. Share your code** | You get a friendly three-word code like `crimson-dragon-42`. Send it to your friends. |
+| **3. Friends join** | They paste the code into Beacon, and your world shows up under **Multiplayer → LAN Worlds** in Minecraft. |
+
+That's it. No IP addresses, no router settings, nothing to rent.
+
+## 🎮 Features
+
+### One-click servers
+- **Java is handled for you.** Beacon downloads a portable Java 21 runtime the first time you need it.
+- **Smart memory settings.** RAM and Java launch flags are picked from your hardware.
+- **Pick your flavor:** **Paper** (plugins), **Fabric** or **NeoForge**.
+- **Runs quietly in the tray,** so closing the window doesn't end your game. Beacon also shuts the server down cleanly so worlds never get corrupted.
+
+### Play together, from anywhere
+- **Room codes instead of IP addresses.** Friends connect to you directly, peer to peer, even behind strict routers or CGNAT.
+- **Shows up as a LAN world.** Friends just open Minecraft and click Join.
+- **Nothing to host.** There is no Beacon server: it's your PC and your friends' PCs.
+
+### Mods that just work
+
+<img src="website/assets/screenshots/mods.png" alt="The Mods screen with Modrinth search" width="760" />
+
+- Search **Modrinth** and add mods, plugins or whole modpacks in a click.
+- When friends join, Beacon gives them the **exact same mods automatically**.
+
+### Look after your friends
+
+<img src="website/assets/screenshots/inventory.png" alt="A player's inventory with a list of items to give" width="760" />
+
+- Heal or feed someone, switch game modes, teleport, kick or ban, all without memorizing commands.
+- **Peek into any player's inventory** (online or offline), take items away, or **give any item** from a searchable list of every vanilla item, with real Minecraft icons.
+- Make it day, clear the weather, or save the world with a button.
+
+### Your world stays safe
+
+<img src="website/assets/screenshots/worlds.png" alt="The Worlds screen with backups and friends who keep a copy" width="760" />
+
+- **Automatic backups** every 10 minutes.
+- Friends you trust can **keep a copy**, so the world keeps going even when your PC is off.
+- Smooth **handover** to another host, and automatic **failover** if the host's PC crashes.
+
+### See what's going on
+
+<img src="website/assets/screenshots/monitor.png" alt="The Monitor screen with the live console and performance" width="760" />
+
+- A live console and performance charts, in plain language.
+- Game rules, difficulty, view distance, whitelist and more as simple switches.
+
+<details>
+<summary><b>More screenshots</b></summary>
+<br />
+
+<img src="website/assets/screenshots/players.png" alt="The Players screen" width="760" />
+<br /><br />
+<img src="website/assets/screenshots/settings.png" alt="The Settings screen" width="760" />
+
+</details>
+
+## 🙋 FAQ
+
+<details>
+<summary><b>Is it really free?</b></summary>
+<br />
+Yes. The server runs on your own PC and friends connect to you directly, so there is nothing to rent and no subscription. Beacon is free and open source.
+</details>
+
+<details>
+<summary><b>Do my friends need Beacon too?</b></summary>
+<br />
+Yes, it's the same small app. They type in your code, Beacon connects them and syncs any mods, then they just open Minecraft.
+</details>
+
+<details>
+<summary><b>Which Minecraft works with it?</b></summary>
+<br />
+Minecraft: Java Edition. You can host plain, plugin (Paper), Fabric or NeoForge worlds.
+</details>
+
+<details>
+<summary><b>Windows shows a warning when I open it</b></summary>
+<br />
+Beacon isn't code-signed yet, so SmartScreen may ask on first launch. Click <b>More info</b> → <b>Run anyway</b>.
+</details>
+
+## 🔧 Under the hood
+
+Beacon is a single desktop app that is both the **host** and the **guest**.
+
+| Piece | How it works |
+|---|---|
+| **App shell** | [Tauri v2](https://tauri.app) (Rust) with a React 19 + TypeScript + Tailwind interface. No Electron, no Docker. |
+| **Game server** | The Minecraft server runs as a child process managed from Rust, with a portable Java 21 from [Adoptium](https://adoptium.net). |
+| **Room codes** | A three-word code derives a key pair; the host's address is published to the BitTorrent Mainline DHT with [pkarr](https://github.com/pubky/pkarr). No central server. |
+| **Connection** | [iroh](https://iroh.computer) (QUIC) punches through NAT and carries the game traffic and a small control channel. |
+| **Mods and content** | [Modrinth](https://modrinth.com) for search and downloads, with hash checks. Custom files travel directly from the host. |
+| **Inventories** | Player data files are watched and read live (NBT), so what you see is what they carry. |
+| **Backups** | World snapshots are compressed with Zstandard and replicated to trusted co-hosts. |
+
+## 🛠 Build from source
+
+You'll need [Node.js](https://nodejs.org), the [Rust toolchain](https://rustup.rs) and the
+[Tauri prerequisites](https://tauri.app/start/prerequisites/) for your OS.
 
 ```bash
-# Install frontend dependencies
+# Install dependencies
 npm install
 
-# Run frontend production build (TypeScript + Vite)
+# Run the app in development mode
+npm start
+
+# Type-check and build the web part
 npm run build
 
-# Run Rust backend unit & integration tests
-cargo test --manifest-path src-tauri/Cargo.toml
+# Build the installer
+npm run tauri build
 
-# Launch Beacon in Tauri desktop development mode
-npm run tauri dev
+# Run the Rust tests
+cargo test --manifest-path src-tauri/Cargo.toml
 ```
 
----
+<details>
+<summary><b>Project layout</b></summary>
 
-## License
+```
+src/                 React interface (screens in src/components/*)
+src-tauri/src/
+  engine/            Java, server process, worlds, properties, inventory reader
+  network/           Room codes, peer-to-peer connection, LAN broadcast, host migration
+  content/           Modrinth search/install and mod syncing
+website/             The landing page
+public/items/        Item icons used by the inventory window
+scripts/             Helpers, e.g. `npm run items:generate` rebuilds the item list and icons
+```
 
-Beacon's source code is free software, licensed under the **GNU General Public License v3.0**
-([LICENSE](LICENSE)). You may use, study, change and share it, but anything you distribute that is
-based on it must also be released under GPL-3.0 with its source code.
+</details>
 
-The license covers the code only. The Minecraft item icons are not covered by it (see below).
+## 📄 License
 
-## Legal
+Beacon's source code is free software under the **[GNU General Public License v3.0](LICENSE)**. You may use,
+study, change and share it; anything you distribute that is based on it must also be released under GPL-3.0
+with its source code. The license covers the code only, not the Minecraft artwork described below.
 
-Beacon is a free, non-commercial fan project. It is **not an official Minecraft product and is not
-approved by or associated with Mojang or Microsoft.** "Minecraft" is a trademark of Mojang AB / Microsoft.
+## ⚖️ Legal
+
+Beacon is a free, non-commercial fan project. It is **not an official Minecraft product and is not approved
+by or associated with Mojang or Microsoft.** "Minecraft" is a trademark of Mojang AB / Microsoft.
 
 The Minecraft item icons in `public/items/` are Mojang's artwork (some via the Minecraft Wiki, CC BY-NC-SA 3.0)
-and are not covered by this project's own license. See [NOTICE.md](NOTICE.md) for sources and credits.
+and are not covered by this project's license. See [NOTICE.md](NOTICE.md) for sources and credits.
