@@ -1,32 +1,33 @@
 import React, { useState } from "react";
-import { resolveItemVisual } from "../lib/minecraft-items";
+import { getCatalogItem, resolveItemVisual } from "../lib/minecraft-items";
 
-const TEXTURE_BASE = "https://cdn.jsdelivr.net/gh/PrismarineJS/minecraft-assets@master/data";
-/** Newest texture set first; older sets fill in anything it lacks. */
-const TEXTURE_VERSIONS = ["26.1", "1.21.11"];
+const SPRITES = "https://cdn.jsdelivr.net/gh/PrismarineJS/minecraft-assets@master/data/26.1";
+const WIKI_ICONS = "https://minecraft.wiki/images";
 
-/** Items whose texture has a different name from their id. */
-const TEXTURE_ALIAS: Record<string, string> = {
-  enchanted_golden_apple: "golden_apple",
-};
-
-/** Texture URLs to try in order: flat item sprite first, then the block texture. */
-const textureUrls = (itemId: string): string[] => {
+/**
+ * Picture URLs to try, best first.
+ * Known vanilla items say where their picture is (see scripts/generate-item-list.mjs);
+ * anything else vanilla gets a guess, and mod items get none.
+ */
+const iconUrls = (itemId: string): string[] => {
+  const known = getCatalogItem(itemId);
+  if (known) {
+    const name = known.id.replace("minecraft:", "");
+    if (known.icon === "i") return [`${SPRITES}/items/${name}.png`];
+    if (known.icon === "b") return [`${SPRITES}/blocks/${name}.png`];
+    return known.icon ? [`${WIKI_ICONS}/${known.icon}`] : [];
+  }
   if (itemId.includes(":") && !itemId.startsWith("minecraft:")) return []; // modded item
-  const short = itemId.replace(/^minecraft:/, "").toLowerCase();
-  const name = TEXTURE_ALIAS[short] ?? short;
-  return TEXTURE_VERSIONS.flatMap((v) => [
-    `${TEXTURE_BASE}/${v}/items/${name}.png`,
-    `${TEXTURE_BASE}/${v}/blocks/${name}.png`,
-  ]);
+  const name = itemId.replace(/^minecraft:/, "").toLowerCase();
+  return [`${SPRITES}/items/${name}.png`, `${SPRITES}/blocks/${name}.png`];
 };
 
-// Remember textures that don't exist so they aren't requested again.
+// Remember pictures that failed to load so they aren't requested again.
 const missing = new Set<string>();
 
 export const ItemIcon: React.FC<{ id: string; className?: string }> = ({ id, className = "w-6 h-6" }) => {
   const [failed, setFailed] = useState(0);
-  const url = textureUrls(id)
+  const url = iconUrls(id)
     .slice(failed)
     .find((u) => !missing.has(u));
 

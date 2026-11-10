@@ -306,6 +306,7 @@ const POPULAR_CATALOG: CatalogItem[] = POPULAR_MINECRAFT_ITEMS.map((i) => ({
   name: i.name,
   maxStack: i.maxStack,
   filter: "other",
+  icon: "", // ItemIcon looks the picture up by id
 }));
 
 const PAGE_SIZE = 60;
