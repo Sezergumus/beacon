@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { resolveItemVisual } from "../lib/minecraft-items";
 
-const TEXTURE_BASE =
-  "https://cdn.jsdelivr.net/gh/PrismarineJS/minecraft-assets@master/data/1.21.1";
+const TEXTURE_BASE = "https://cdn.jsdelivr.net/gh/PrismarineJS/minecraft-assets@master/data";
+/** Newest texture set first; older sets fill in anything it lacks. */
+const TEXTURE_VERSIONS = ["26.1", "1.21.11"];
 
 /** Items whose texture has a different name from their id. */
 const TEXTURE_ALIAS: Record<string, string> = {
@@ -14,7 +15,10 @@ const textureUrls = (itemId: string): string[] => {
   if (itemId.includes(":") && !itemId.startsWith("minecraft:")) return []; // modded item
   const short = itemId.replace(/^minecraft:/, "").toLowerCase();
   const name = TEXTURE_ALIAS[short] ?? short;
-  return [`${TEXTURE_BASE}/items/${name}.png`, `${TEXTURE_BASE}/blocks/${name}.png`];
+  return TEXTURE_VERSIONS.flatMap((v) => [
+    `${TEXTURE_BASE}/${v}/items/${name}.png`,
+    `${TEXTURE_BASE}/${v}/blocks/${name}.png`,
+  ]);
 };
 
 // Remember textures that don't exist so they aren't requested again.
