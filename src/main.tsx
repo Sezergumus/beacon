@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
-import "@fontsource-variable/nunito";
+import "@fontsource-variable/plus-jakarta-sans";
 import "./index.css";
 import { disableBrowserBehavior } from "./lib/disableBrowserBehavior";
 import { installGlobalErrorHandlers } from "./lib/globalErrors";

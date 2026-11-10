@@ -7,8 +7,8 @@ export default {
     extend: {
       fontFamily: {
         sans: [
-          "Nunito Variable",
-          "Nunito",
+          "Plus Jakarta Sans Variable",
+          "Plus Jakarta Sans",
           "Segoe UI",
           "system-ui",
           "sans-serif",
