@@ -8,6 +8,7 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "icons:generate": "node scripts/generate-icons.mjs",
+    "items:generate": "node scripts/generate-item-list.mjs",
     "tauri": "node scripts/run-tauri.mjs",
     "start": "node scripts/run-tauri.mjs dev"
   },
