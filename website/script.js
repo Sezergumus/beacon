@@ -79,9 +79,11 @@ async function fetchLatestRelease() {
       });
     }
 
-    // Point download buttons straight at the Windows installer when there is one
+    // Point download buttons straight at the Windows installer (the .exe) when there is one
     const assets = Array.isArray(latest.assets) ? latest.assets : [];
-    const installer = assets.find((a) => /\.(msi|exe)$/i.test(a.name || ""));
+    const installer =
+      assets.find((a) => /-setup\.exe$/i.test(a.name || "")) ||
+      assets.find((a) => /\.(exe|msi)$/i.test(a.name || ""));
     const url = (installer && installer.browser_download_url) || latest.html_url;
     if (!url) return;
     document.querySelectorAll("[data-download-release]").forEach((btn) => {
