@@ -31,5 +31,7 @@ jobs:
           releaseBody: |
             Windows installer for Beacon. This build is not code-signed, so Windows
             SmartScreen may warn on first launch ("More info" > "Run anyway").
+          # Stays a draft so you can test the installer before publishing. It is not marked as a
+          # pre-release: GitHub's "latest release" link (used by the site and README) skips those.
           releaseDraft: true
-          prerelease: true
+          prerelease: false
