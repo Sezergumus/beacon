@@ -125,6 +125,39 @@
   opacity: 0.25;
 }
 
+/* The card's light pulses while the world starts or stops. */
+@keyframes beacon-light-pulse {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes beacon-halo-pulse {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0.55;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .beacon-art--card[data-state="starting"] .beacon-art__light,
+  .beacon-art--card[data-state="stopping"] .beacon-art__light,
+  .beacon-art--card[data-state="provisioning"] .beacon-art__light {
+    animation: beacon-light-pulse 0.7s ease-in-out infinite alternate;
+  }
+
+  .beacon-art--card[data-state="starting"] .beacon-art__halo,
+  .beacon-art--card[data-state="stopping"] .beacon-art__halo,
+  .beacon-art--card[data-state="provisioning"] .beacon-art__halo {
+    animation: beacon-halo-pulse 0.7s ease-in-out infinite alternate;
+  }
+}
+
 @keyframes toast-in {
   from {
     opacity: 0;
