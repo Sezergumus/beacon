@@ -1,8 +1,8 @@
 # Beacon app icons
 
 `app-icon.png` is the clean RGBA master. Its rounded corners and outer margin
-are transparent. `beacon-icon.jpg` is the original reference and must not be
-used directly to regenerate icons: its white background causes edge halos.
+are transparent. Always regenerate icons from this file: the original artwork
+had a white background, which caused edge halos.
 
 Run `npm run icons:generate` from the project root to regenerate the desktop,
 Windows Store, iOS and Android icons and sync `public/beacon-icon.png`.
