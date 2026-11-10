@@ -51,6 +51,14 @@ npm run tauri dev
 
 ---
 
+## License
+
+Beacon's source code is free software, licensed under the **GNU General Public License v3.0**
+([LICENSE](LICENSE)). You may use, study, change and share it, but anything you distribute that is
+based on it must also be released under GPL-3.0 with its source code.
+
+The license covers the code only. The Minecraft item icons are not covered by it (see below).
+
 ## Legal
 
 Beacon is a free, non-commercial fan project. It is **not an official Minecraft product and is not

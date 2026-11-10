@@ -2,6 +2,7 @@
 name = "beacon"
 version = "0.1.0"
 description = "Zero-Cost P2P Minecraft Server Manager"
+license = "GPL-3.0-only"
 authors = ["Beacon"]
 edition = "2021"
 

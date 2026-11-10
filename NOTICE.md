@@ -5,11 +5,19 @@ Beacon is a free, non-commercial fan project. It is **not an official Minecraft 
 
 "Minecraft" is a trademark of Mojang AB / Microsoft. Beacon is not sold and carries no ads or paid features.
 
+## License of Beacon's code
+
+Beacon's source code is licensed under the GNU General Public License v3.0 only (see `LICENSE`).
+Source code: <https://github.com/Sezergumus/beacon>.
+
+This applies to the code and original text in this repository, **not** to the third-party material below.
+
 ## Minecraft item icons
 
 The pictures in `public/items/` show Minecraft items inside the inventory window. They are
 artwork owned by Mojang AB and are included only to label items in this free tool.
-They are not covered by Beacon's own license, and no rights to them are granted.
+They are not covered by Beacon's GPL-3.0 license (or by any license from this project),
+and no rights to them are granted. They are shipped next to the program as separate files.
 
 Where they come from:
 

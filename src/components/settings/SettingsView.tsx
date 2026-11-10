@@ -327,7 +327,8 @@ export const SettingsView: React.FC<{
 
       <Card title="About">
         <p className="text-sm text-soft">
-          Beacon is a free fan project. It is not an official Minecraft product and is not approved
+          Beacon is free software under the GNU GPL v3 (source on GitHub: Sezergumus/beacon). It is
+          a fan project. It is not an official Minecraft product and is not approved
           by or associated with Mojang or Microsoft. Item pictures are Mojang's artwork; some come
           from the Minecraft Wiki (CC BY-NC-SA 3.0).
         </p>
