@@ -2,6 +2,7 @@
 // and downloads one icon per item to public/items/<id>.png so the app works offline.
 // Icon sources: PrismarineJS items/ sprite, else its blocks/ texture, else the Minecraft Wiki
 // inventory icon (for items the game draws from a 3D model).
+// Afterwards run `python scripts/shrink-item-icons.py`: a few wiki icons are huge animated GIFs.
 // Sources: PrismarineJS/minecraft-data and PrismarineJS/minecraft-assets. Run `npm run items:generate [version]` to refresh it.
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
