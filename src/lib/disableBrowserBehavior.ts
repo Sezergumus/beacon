@@ -1,14 +1,13 @@
 /**
- * Tarayıcıya özgü davranışları kapatır, böylece uygulama native bir masaüstü
- * uygulaması gibi hissettirir: yenileme, sağ tık menüsü, yazdırma, kaynak
- * görüntüleme, sayfada arama vb.
+ * Turns off browser-specific behavior so the app feels like a native desktop
+ * app: reload, the right-click menu, print, view source, find in page, etc.
  *
- * - Yenileme / yazdırma / kaynak görüntüleme / sayfada arama kısayolları her
- *   zaman engellenir.
- * - DevTools kısayolları (F12, Ctrl+Shift+I/J/C) sadece geliştirme modunda açık
- *   bırakılır.
- * - Metin alanlarında (input/textarea/contenteditable) sağ tık menüsü açık kalır;
- *   kopyala/yapıştır için gerekli.
+ * - Shortcuts for reload / print / view source / find in page are always
+ *   blocked.
+ * - DevTools shortcuts (F12, Ctrl+Shift+I/J/C) are only left enabled in
+ *   development mode.
+ * - The right-click menu stays available in text fields
+ *   (input/textarea/contenteditable); it is needed for copy/paste.
  */
 export function disableBrowserBehavior(): void {
   const isDev = import.meta.env.DEV;
@@ -37,16 +36,16 @@ export function disableBrowserBehavior(): void {
       const ctrl = e.ctrlKey || e.metaKey;
 
       const blocked =
-        // Yenileme
+        // Reload
         key === "f5" ||
         (ctrl && key === "r") ||
-        // Yazdır, kaynağı görüntüle, kaydet, sayfada ara, git
+        // Print, view source, save, find in page, find next
         (ctrl && ["p", "u", "s", "f", "g", "j"].includes(key) && !e.shiftKey) ||
-        // Geri / ileri
+        // Back / forward
         (e.altKey && (key === "arrowleft" || key === "arrowright")) ||
-        // Yakınlaştırma
+        // Zoom
         (ctrl && ["+", "-", "=", "0"].includes(key)) ||
-        // DevTools (sadece production'da)
+        // DevTools (production only)
         (!isDev &&
           (key === "f12" ||
             (ctrl && e.shiftKey && ["i", "j", "c"].includes(key))));
@@ -59,7 +58,7 @@ export function disableBrowserBehavior(): void {
     true,
   );
 
-  // Ctrl + fare tekerleği ile yakınlaştırmayı engelle
+  // Block zooming with Ctrl + mouse wheel
   window.addEventListener(
     "wheel",
     (e) => {

@@ -20,6 +20,6 @@ npm-debug.log*
 .DS_Store
 Thumbs.db
 
-# AI direktif dosyası (yerel, repoya girmez)
+# Local AI instructions file (stays out of the repo)
 CLAUDE.md
 .claude/
