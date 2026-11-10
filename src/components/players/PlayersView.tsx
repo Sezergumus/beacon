@@ -20,6 +20,7 @@ import {
 import { useServerStore } from "../../stores/useServerStore";
 import { InventoryItemSlot, OnlinePlayer } from "../../lib/tauri";
 import { POPULAR_MINECRAFT_ITEMS, resolveItemVisual } from "../../lib/minecraft-items";
+import { ItemIcon } from "../ItemIcon";
 import {
   Button,
   Card,
@@ -252,7 +253,9 @@ const SlotButton: React.FC<{
         vis.rarityColor
       )}`}
     >
-      <vis.icon className="w-6 h-6 text-ink group-hover:opacity-30 transition-opacity" />
+      <span className="group-hover:opacity-30 transition-opacity">
+        <ItemIcon id={item.id} className="w-8 h-8" />
+      </span>
       <X className="absolute w-5 h-5 text-danger opacity-0 group-hover:opacity-100 transition-opacity" />
       {item.count > 1 && (
         <span className="absolute bottom-0.5 right-1 rounded-md bg-bg/80 px-1 text-[11px] leading-4 font-extrabold tabular-nums">
@@ -419,7 +422,7 @@ const InventoryModal: React.FC = () => {
                   className="flex items-center gap-2.5 rounded-xl bg-raised/40 px-3 py-2.5 text-left hover:bg-raised transition-colors cursor-pointer"
                 >
                   <span className="w-8 h-8 shrink-0 rounded-lg bg-bg/50 flex items-center justify-center">
-                    <m.icon className="w-4 h-4 text-soft" />
+                    <ItemIcon id={m.id} className="w-6 h-6" />
                   </span>
                   <span className="font-bold text-sm truncate">{m.name}</span>
                 </button>
