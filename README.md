@@ -48,3 +48,13 @@ cargo test --manifest-path src-tauri/Cargo.toml
 # Launch Beacon in Tauri desktop development mode
 npm run tauri dev
 ```
+
+---
+
+## Legal
+
+Beacon is a free, non-commercial fan project. It is **not an official Minecraft product and is not
+approved by or associated with Mojang or Microsoft.** "Minecraft" is a trademark of Mojang AB / Microsoft.
+
+The Minecraft item icons in `public/items/` are Mojang's artwork (some via the Minecraft Wiki, CC BY-NC-SA 3.0)
+and are not covered by this project's own license. See [NOTICE.md](NOTICE.md) for sources and credits.
