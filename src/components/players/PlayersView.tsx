@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   Compass,
   Crown,
@@ -19,7 +19,13 @@ import {
 } from "lucide-react";
 import { useServerStore } from "../../stores/useServerStore";
 import { InventoryItemSlot, OnlinePlayer } from "../../lib/tauri";
-import { POPULAR_MINECRAFT_ITEMS, resolveItemVisual } from "../../lib/minecraft-items";
+import {
+  ALL_MINECRAFT_ITEMS,
+  POPULAR_MINECRAFT_ITEMS,
+  resolveItemVisual,
+  type CatalogItem,
+  type ItemFilter,
+} from "../../lib/minecraft-items";
 import { ItemIcon } from "../ItemIcon";
 import {
   Button,
@@ -284,11 +290,43 @@ const nbtSlotToCommandSlot = (slot: number): string => {
   return `container.${Math.max(0, slot)}`;
 };
 
+const ITEM_FILTERS: { id: ItemFilter; label: string }[] = [
+  { id: "popular", label: "Popular" },
+  { id: "all", label: "All" },
+  { id: "blocks", label: "Blocks" },
+  { id: "tools", label: "Tools" },
+  { id: "combat", label: "Combat" },
+  { id: "armor", label: "Armor" },
+  { id: "food", label: "Food" },
+  { id: "other", label: "Other" },
+];
+
+const POPULAR_CATALOG: CatalogItem[] = POPULAR_MINECRAFT_ITEMS.map((i) => ({
+  id: i.id,
+  name: i.name,
+  maxStack: i.maxStack,
+  filter: "other",
+}));
+
+const PAGE_SIZE = 60;
+
 const InventoryModal: React.FC = () => {
   const { activeInventory: inv, executePlayerAction, closePlayerInventory } = useServerStore();
   const [itemSearch, setItemSearch] = useState("");
   const [amount, setAmount] = useState(1);
   const [customId, setCustomId] = useState("");
+  const [itemFilter, setItemFilter] = useState<ItemFilter>("popular");
+  const [shown, setShown] = useState(PAGE_SIZE);
+
+  const matches = useMemo(() => {
+    const q = itemSearch.trim().toLowerCase();
+    // Popular only holds a few items, so typing a search looks through everything.
+    const pool =
+      itemFilter === "popular" && !q
+        ? POPULAR_CATALOG
+        : ALL_MINECRAFT_ITEMS.filter((i) => itemFilter === "popular" || itemFilter === "all" || i.filter === itemFilter);
+    return q ? pool.filter((i) => i.name.toLowerCase().includes(q) || i.id.includes(q.replace(/ /g, "_"))) : pool;
+  }, [itemSearch, itemFilter]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && closePlayerInventory();
@@ -305,10 +343,7 @@ const InventoryModal: React.FC = () => {
     executePlayerAction(inv.username, "delete_slot", item.command_slot || nbtSlotToCommandSlot(slot));
   const give = (id: string, count: number) => executePlayerAction(name, "give_item", `${id} ${count}`);
 
-  const q = itemSearch.toLowerCase();
-  const items = POPULAR_MINECRAFT_ITEMS.filter(
-    (i) => i.name.toLowerCase().includes(q) || i.category.includes(q)
-  );
+  const items = matches.slice(0, shown);
 
   const slot = (n: number, label?: string, emptyIcon?: LucideIcon) => (
     <SlotButton
@@ -398,7 +433,10 @@ const InventoryModal: React.FC = () => {
                 <Search className="w-4 h-4 text-faint absolute left-3.5 top-3.5" />
                 <TextInput
                   value={itemSearch}
-                  onChange={(e) => setItemSearch(e.target.value)}
+                  onChange={(e) => {
+                    setItemSearch(e.target.value);
+                    setShown(PAGE_SIZE);
+                  }}
                   placeholder="Search items"
                   className="pl-10"
                   aria-label="Search items"
@@ -413,6 +451,23 @@ const InventoryModal: React.FC = () => {
                   { id: "64", label: "64" },
                 ]}
               />
+            </div>
+            <div className="flex flex-wrap gap-1.5" role="group" aria-label="Item category">
+              {ITEM_FILTERS.map((f) => (
+                <button
+                  key={f.id}
+                  onClick={() => {
+                    setItemFilter(f.id);
+                    setShown(PAGE_SIZE);
+                  }}
+                  aria-pressed={itemFilter === f.id}
+                  className={`rounded-full px-3 py-1 text-sm font-bold transition-colors cursor-pointer ${
+                    itemFilter === f.id ? "bg-brand text-brand-ink" : "bg-raised/60 text-soft hover:bg-raised"
+                  }`}
+                >
+                  {f.label}
+                </button>
+              ))}
             </div>
             <div className="grid grid-cols-2 gap-1.5 max-h-80 overflow-y-auto pr-1">
               {items.map((m) => (
@@ -429,6 +484,14 @@ const InventoryModal: React.FC = () => {
               ))}
               {items.length === 0 && (
                 <div className="col-span-2 text-sm text-faint py-4 text-center">No items match.</div>
+              )}
+              {matches.length > shown && (
+                <button
+                  onClick={() => setShown((n) => n + PAGE_SIZE)}
+                  className="col-span-2 rounded-xl py-2.5 text-sm font-bold text-soft hover:bg-raised transition-colors cursor-pointer"
+                >
+                  Show more ({matches.length - shown} left)
+                </button>
               )}
             </div>
             <div className="pt-2">
