@@ -4,8 +4,44 @@ document.documentElement.classList.add("js");
 
 document.addEventListener("DOMContentLoaded", () => {
   initReveal();
+  initViewer();
   fetchLatestRelease();
 });
+
+/* Click a screenshot to see it large, right on the page */
+function initViewer() {
+  const viewer = document.getElementById("viewer");
+  const viewerImg = document.getElementById("viewer-img");
+  const closeBtn = document.getElementById("viewer-close");
+  if (!viewer || typeof viewer.showModal !== "function") return; // links still open the image
+
+  const open = (src, alt) => {
+    viewerImg.src = src;
+    viewerImg.alt = alt || "";
+    viewer.showModal();
+  };
+
+  document.querySelectorAll(".feature-shot").forEach((link) => {
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
+      const img = link.querySelector("img");
+      open(link.getAttribute("href"), img && img.alt);
+    });
+  });
+
+  document.querySelectorAll("img[data-zoom]").forEach((img) => {
+    img.addEventListener("click", () => open(img.currentSrc || img.src, img.alt));
+  });
+
+  closeBtn.addEventListener("click", () => viewer.close());
+  // A click on the dark area around the picture closes it too
+  viewer.addEventListener("click", (e) => {
+    if (e.target !== viewerImg) viewer.close();
+  });
+  viewer.addEventListener("close", () => {
+    viewerImg.removeAttribute("src");
+  });
+}
 
 function initReveal() {
   const items = document.querySelectorAll(".reveal");

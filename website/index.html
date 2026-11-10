@@ -97,6 +97,7 @@
         <div class="container">
           <figure class="hero-shot">
             <img
+              data-zoom
               src="./assets/screenshots/dashboard.png"
               alt="Beacon's home screen: your world is open, with a room code to share and the list of friends playing"
               width="2680"
@@ -264,6 +265,17 @@
         </div>
       </div>
     </footer>
+
+    <!-- Screenshot viewer: opens when a screenshot is clicked -->
+    <dialog id="viewer" class="viewer" aria-label="Screenshot">
+      <button type="button" class="viewer-close" id="viewer-close" aria-label="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">
+          <line x1="6" y1="6" x2="18" y2="18" />
+          <line x1="18" y1="6" x2="6" y2="18" />
+        </svg>
+      </button>
+      <img id="viewer-img" src="" alt="" />
+    </dialog>
 
     <script src="./script.js"></script>
   </body>
