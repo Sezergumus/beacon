@@ -1,8 +1,9 @@
-// Builds src/lib/minecraft-item-list.json: every item as [id, display name, stack size, category, icon].
-// `icon` says where the picture is: "i" = PrismarineJS items/ sprite, "b" = its blocks/ texture,
-// "Invicon_X.png" = Minecraft Wiki inventory icon (for items drawn from a 3D model), "" = none.
+// Builds src/lib/minecraft-item-list.json (every item as [id, display name, stack size, category])
+// and downloads one icon per item to public/items/<id>.png so the app works offline.
+// Icon sources: PrismarineJS items/ sprite, else its blocks/ texture, else the Minecraft Wiki
+// inventory icon (for items the game draws from a 3D model).
 // Sources: PrismarineJS/minecraft-data and PrismarineJS/minecraft-assets. Run `npm run items:generate [version]` to refresh it.
-import { writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
 const VERSION = process.argv[2] ?? "26.1";
@@ -79,15 +80,52 @@ const iconOf = (name) => {
   return wikiExists.has(file) ? file : "";
 };
 
-const list = all.map((i) => [i.name, i.displayName, i.stackSize, categoryOf(i.name), iconOf(i.name)]);
+const list = all.map((i) => [i.name, i.displayName, i.stackSize, categoryOf(i.name)]);
+const iconFor = new Map(all.map((i) => [i.name, iconOf(i.name)]));
 
-const out = fileURLToPath(new URL("../src/lib/minecraft-item-list.json", import.meta.url));
-writeFileSync(out, JSON.stringify(list) + "\n");
+const root = (path) => fileURLToPath(new URL(path, import.meta.url));
+writeFileSync(root("../src/lib/minecraft-item-list.json"), JSON.stringify(list) + "\n");
+
+// --- icons ---
+const SPRITES = `https://raw.githubusercontent.com/PrismarineJS/minecraft-assets/master/data/${VERSION}`;
+const iconDir = root("../public/items/");
+mkdirSync(iconDir, { recursive: true });
+
+const urlOf = (name, icon) =>
+  icon === "i" ? `${SPRITES}/items/${name}.png` : icon === "b" ? `${SPRITES}/blocks/${name}.png` : `https://minecraft.wiki/w/Special:FilePath/${icon}`;
+
+const cache = new Map(); // wiki icons are shared by waxed/infested variants
+const fetchIcon = async (url) => {
+  if (!cache.has(url)) {
+    cache.set(
+      url,
+      fetch(url, { headers: { "User-Agent": "Beacon-item-list-generator" } }).then(async (res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
+        return Buffer.from(await res.arrayBuffer());
+      }),
+    );
+  }
+  return cache.get(url);
+};
+
+const queue = [...iconFor].filter(([name]) => !existsSync(`${iconDir}${name}.png`));
+const failed = [];
+let done = 0;
+const worker = async () => {
+  for (let job = queue.pop(); job; job = queue.pop()) {
+    const [name, icon] = job;
+    try {
+      writeFileSync(`${iconDir}${name}.png`, await fetchIcon(urlOf(name, icon)));
+      done++;
+    } catch (err) {
+      failed.push(`${name}: ${err.message}`);
+    }
+  }
+};
+await Promise.all(Array.from({ length: 6 }, worker));
 
 const counts = {};
 for (const [, , , c] of list) counts[c] = (counts[c] ?? 0) + 1;
-const icons = { sprite: 0, block: 0, wiki: 0, none: 0 };
-for (const [, , , , ic] of list) icons[ic === "i" ? "sprite" : ic === "b" ? "block" : ic ? "wiki" : "none"]++;
-console.log("icons", icons);
-if (icons.none) console.log("no icon:", list.filter((x) => !x[4]).map((x) => x[0]).join(", "));
-console.log(`Wrote ${list.length} items (Minecraft ${VERSION}) to ${out}`, counts);
+console.log(`Wrote ${list.length} items (Minecraft ${VERSION})`, counts);
+console.log(`Downloaded ${done} icons to ${iconDir} (existing files are kept; delete them to refresh)`);
+if (failed.length) console.log(`${failed.length} icons failed:\n${failed.join("\n")}`);
