@@ -1,6 +1,7 @@
 name: Release
 
-# Push a tag like v0.1.0 to build the installer and attach it to a draft GitHub release.
+# Push a tag like v0.1.0 to build Beacon.exe and attach it to a draft GitHub release.
+# There is no installer: Beacon.exe runs on its own, from any folder.
 on:
   push:
     tags: ["v*"]
@@ -22,16 +23,25 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           workspaces: src-tauri
-      - uses: tauri-apps/tauri-action@v0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # --no-bundle skips the installer step and only builds the program itself.
+      - name: Build
+        run: npm run tauri -- build --no-bundle
+
+      - name: Name the file
+        run: Copy-Item src-tauri/target/release/beacon.exe Beacon.exe
+
+      - uses: softprops/action-gh-release@v2
         with:
-          tagName: ${{ github.ref_name }}
-          releaseName: Beacon ${{ github.ref_name }}
-          releaseBody: |
-            Windows installer for Beacon. This build is not code-signed, so Windows
-            SmartScreen may warn on first launch ("More info" > "Run anyway").
-          # Stays a draft so you can test the installer before publishing. It is not marked as a
+          tag_name: ${{ github.ref_name }}
+          name: Beacon ${{ github.ref_name }}
+          # Stays a draft so you can test Beacon.exe before publishing. It is not marked as a
           # pre-release: GitHub's "latest release" link (used by the site and README) skips those.
-          releaseDraft: true
+          draft: true
           prerelease: false
+          files: Beacon.exe
+          body: |
+            Download **Beacon.exe** and double-click it. There is nothing to install.
+
+            This build is not code-signed, so Windows SmartScreen may warn on first launch
+            ("More info" > "Run anyway").
