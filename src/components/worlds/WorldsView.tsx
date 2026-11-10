@@ -106,7 +106,7 @@ export const WorldsView: React.FC = () => {
   return (
     <Page
       title="Worlds"
-      subtitle="Your worlds and their saved copies. The world you're playing is backed up every 10 minutes."
+      subtitle="Your worlds, backed up every 10 minutes."
       action={
         <div className="flex items-center gap-2">
           <Button
